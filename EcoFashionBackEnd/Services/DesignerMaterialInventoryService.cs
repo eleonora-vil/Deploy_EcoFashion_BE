@@ -161,11 +161,13 @@ namespace EcoFashionBackEnd.Services
         public async Task<List<DesignerMaterialInventorySummaryDto>> GetDesignerMaterialInventoryOfDesigner(Guid designerId)
         {
             var inventories = await _dbContext.DesignerMaterialInventories
-                .Include(dmi => dmi.Material)
-                    .ThenInclude(m => m.MaterialImages)
-                        .ThenInclude(mi => mi.Image)
-                .Where(dmi => dmi.Warehouse.DesignerId == designerId)
-                .ToListAsync();
+                 .Include(dmi => dmi.Material)
+                     .ThenInclude(m => m.Supplier) // load Supplier
+                 .Include(dmi => dmi.Material)
+                     .ThenInclude(m => m.MaterialImages) // load MaterialImages
+                         .ThenInclude(mi => mi.Image) // load Image
+                 .Where(dmi => dmi.Warehouse.DesignerId == designerId)
+                 .ToListAsync();
 
             if (!inventories.Any())
                 throw new NotFoundException("Không tìm thấy kho vật liệu.");
@@ -179,12 +181,14 @@ namespace EcoFashionBackEnd.Services
                                 .Select(img => img.Image != null ? img.Image.ImageUrl : null)
                                 .FirstOrDefault(url => !string.IsNullOrEmpty(url)) ?? string.Empty,
                 Quantity = (decimal)(inv.Quantity),
-                Status = inv.Quantity <= 0 ? "Hết hàng"
-                         : inv.Quantity < 10 ? "Còn ít"
-                         : "Còn hàng",
+                Status = inv.Quantity <= 0 ? "Hết Hàng"
+                         : inv.Quantity < 10 ? "Còn Ít"
+                         : "Còn Hàng",
                 PricePerUnit = inv.Material?.PricePerUnit ?? 0,
-                TotalValue = (decimal)inv.Cost,
-                LastUpdated = inv.LastBuyDate
+                TotalValue = (decimal) inv.Cost,
+                LastUpdated = inv.LastBuyDate,
+                QuantityAvailable = inv.Material.QuantityAvailable,
+                SupplierName = inv.Material.Supplier.SupplierName,
             }).ToList();
         }
 

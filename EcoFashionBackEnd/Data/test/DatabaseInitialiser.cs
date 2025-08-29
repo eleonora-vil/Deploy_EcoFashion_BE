@@ -99,7 +99,7 @@ namespace EcoFashionBackEnd.Data.test
                 await MaterialInventorySeeder.SeedAsync(_context);
 
                 Console.WriteLine("Seeding Material Stock Transactions...");
-                //await MaterialStockTransactionSeeder.SeedAsync(_context);
+             //   await MaterialStockTransactionSeeder.SeedAsync(_context);
                 #endregion
 
                 #region -- Product --

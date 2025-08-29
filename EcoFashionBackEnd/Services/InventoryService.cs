@@ -114,7 +114,7 @@ namespace EcoFashionBackEnd.Services
                     BeforeQty = beforeQty,
                     AfterQty = afterQty,
                     TransactionType = change.TotalQuantity >= 0 ? "Import" : "Export",
-                    TransactionDate = DateTime.UtcNow,
+                    TransactionDate = DateTime.Now,
                     Notes = isNewInventory
         ? "Tạo mới sản phẩm trong kho."
         : (change.TotalQuantity >= 0 ? "Nhập kho sản phẩm." : "Xuất kho sản phẩm.")

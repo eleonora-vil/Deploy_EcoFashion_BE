@@ -373,10 +373,12 @@ namespace EcoFashionBackEnd.Services
                         .Where(r => r.SizeId == p.SizeId)
                         .Select(r => r.Ratio)
                         .FirstOrDefault(),
+                    DesignId = p.DesignId,
                     QuantityAvailable = p.Inventories
                         .Where(pi => pi.WarehouseId == productWarehouseId)
                         .Select(pi => pi.QuantityAvailable)
                         .FirstOrDefault()
+                       
                 }))
                 .ToListAsync();
 

@@ -11,6 +11,8 @@
         public decimal PricePerUnit { get; set; }
         public decimal TotalValue { get; set; }
         public DateTime? LastUpdated { get; set; }
+        public string SupplierName { get; set; }
+        public int QuantityAvailable { get; set; }
     }
 
 }

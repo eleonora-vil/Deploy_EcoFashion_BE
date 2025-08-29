@@ -10,5 +10,6 @@
         public string SizeName { get; set; }
         public float SizeRatio { get; set; }
         public int QuantityAvailable { get; set; }
+        public int DesignId { get; set; }
     }
 }
