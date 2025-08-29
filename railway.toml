@@ -1,0 +1,10 @@
+# railway.toml
+[build]
+builder = "dockerfile"
+# Giữ nguyên vì Dockerfile nằm trong EcoFashionBackEnd/
+dockerfilePath = "EcoFashionBackEnd/Dockerfile"
+
+[deploy]
+
+restartPolicyType = "always"
+healthcheckPath = "/health"
