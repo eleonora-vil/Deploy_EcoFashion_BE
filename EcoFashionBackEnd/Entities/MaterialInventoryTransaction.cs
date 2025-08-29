@@ -20,6 +20,6 @@ namespace EcoFashionBackEnd.Entities
         public decimal? AfterQty { get; set; }
         public string TransactionType { get; set; }
         public string Notes { get; set; }
-        public DateTime TransactionDate { get; set; } = DateTime.UtcNow;
+        public DateTime TransactionDate { get; set; } = DateTime.Now;
     }
 }

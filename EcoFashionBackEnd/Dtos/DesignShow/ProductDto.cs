@@ -8,6 +8,7 @@
         public string ColorCode { get; set; }
         public int SizeId { get; set; }
         public string SizeName { get; set; }
+        public float SizeRatio { get; set; }
         public int QuantityAvailable { get; set; }
     }
 }

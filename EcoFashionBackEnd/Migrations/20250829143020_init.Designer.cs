@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EcoFashionBackEnd.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250829052341_init")]
+    [Migration("20250829143020_init")]
     partial class init
     {
         /// <inheritdoc />

@@ -150,7 +150,7 @@ namespace EcoFashionBackEnd.Services
                 BalanceAfter = wallet.Balance, // chưa trừ tiền
                 Type = TransactionType.Withdrawal,
                 Status = Entities.TransactionStatus.Pending,
-                Description = description ?? $"Request withdrawal {amount} VND",
+                Description = description ?? $"Yêu cầu rút {amount:N0} VND",
                 CreatedAt = DateTime.UtcNow
             };
 

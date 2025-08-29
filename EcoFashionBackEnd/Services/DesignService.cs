@@ -292,6 +292,7 @@ namespace EcoFashionBackEnd.Services
                             Id = dv.Id,
                             DesignId = dv.DesignId,
                             Quantity = dv.Quantity,
+                            SizeId = dv.SizeId,
                             SizeName = dv.Size.SizeName,
                             ColorCode = dv.ColorCode,
                             Ratio = d.ItemTypes.TypeSizeRatios
@@ -368,6 +369,10 @@ namespace EcoFashionBackEnd.Services
                     ColorCode = p.ColorCode,
                     SizeId = p.SizeId,
                     SizeName = p.Size.SizeName,
+                    SizeRatio = d.ItemTypes.TypeSizeRatios
+                        .Where(r => r.SizeId == p.SizeId)
+                        .Select(r => r.Ratio)
+                        .FirstOrDefault(),
                     QuantityAvailable = p.Inventories
                         .Where(pi => pi.WarehouseId == productWarehouseId)
                         .Select(pi => pi.QuantityAvailable)
