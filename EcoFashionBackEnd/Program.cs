@@ -15,8 +15,8 @@ public class Program
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddInfrastructure(builder.Configuration);
                // 2. Railway PORT config
-        //var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-        //builder.WebHost.UseUrls($"http://*:{port}");
+        var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+        builder.WebHost.UseUrls($"http://*:{port}");
 
         // 3. Health check
         builder.Services.AddHealthChecks();
