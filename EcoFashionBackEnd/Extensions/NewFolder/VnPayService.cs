@@ -58,7 +58,10 @@ namespace EcoFashionBackEnd.Extensions.NewFolder
             var txnRef = string.IsNullOrWhiteSpace(model.TxnRef)
                 ? $"{model.OrderId}_{DateTime.Now:yyyyMMddHHmmss}"
                 : model.TxnRef; // ưu tiên TxnRef từ service để đồng bộ DB
-
+            var scheme = context.Request.Scheme;
+            var host = context.Request.Host;
+            var callbackPath = "/api/wallet/deposit/callback";
+            var returnUrl = $"{scheme}://{host}{callbackPath}";
             var vnpay = new VnPayLibrary();
             vnpay.AddRequestData("vnp_Version", _config["VnPay:Version"]);
             vnpay.AddRequestData("vnp_Command", _config["VnPay:Command"]);
@@ -72,7 +75,7 @@ namespace EcoFashionBackEnd.Extensions.NewFolder
             vnpay.AddRequestData("vnp_OrderType", "other");
 
             // Chỉ khác: callback URL mới
-            vnpay.AddRequestData("vnp_ReturnUrl", "http://localhost:5148/api/wallet/deposit/callback");
+            vnpay.AddRequestData("vnp_ReturnUrl", returnUrl);
 
             vnpay.AddRequestData("vnp_TxnRef", txnRef);
 
@@ -89,7 +92,10 @@ namespace EcoFashionBackEnd.Extensions.NewFolder
             var txnRef = string.IsNullOrWhiteSpace(model.TxnRef)
                 ? $"{model.OrderId}_{DateTime.Now:yyyyMMddHHmmss}"
                 : model.TxnRef; // ưu tiên TxnRef từ service để đồng bộ DB
-
+            var scheme = context.Request.Scheme;
+            var host = context.Request.Host;
+            var callbackPath = "/api/wallet/withdrawal/callback";
+            var returnUrl = $"{scheme}://{host}{callbackPath}";
             var vnpay = new VnPayLibrary();
             vnpay.AddRequestData("vnp_Version", _config["VnPay:Version"]);
             vnpay.AddRequestData("vnp_Command", _config["VnPay:Command"]);
@@ -103,7 +109,7 @@ namespace EcoFashionBackEnd.Extensions.NewFolder
             vnpay.AddRequestData("vnp_OrderType", "other");
 
             // ⚡ Khác chỗ này: callback URL cho withdrawal
-            vnpay.AddRequestData("vnp_ReturnUrl", "http://localhost:5148/api/wallet/withdrawal/callback");
+            vnpay.AddRequestData("vnp_ReturnUrl", returnUrl);
 
             vnpay.AddRequestData("vnp_TxnRef", txnRef);
 
@@ -137,7 +143,7 @@ namespace EcoFashionBackEnd.Extensions.NewFolder
             var vnp_BankCode = vnpay.GetResponseData("vnp_BankCode");
             var vnp_SecureHash = collections.FirstOrDefault(p => p.Key == "vnp_SecureHash").Value;
             var vnp_TransactionId = Convert.ToInt64(vnpay.GetResponseData("vnp_TransactionNo"));
-            
+
             // Lấy số tiền từ VNPay response (vnp_Amount được gửi với đơn vị là VNĐ x 100)
             var vnp_Amount = vnpay.GetResponseData("vnp_Amount");
             double amount = 0;
@@ -193,6 +199,6 @@ namespace EcoFashionBackEnd.Extensions.NewFolder
     }
 
 
- }
+}
 
 
