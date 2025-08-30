@@ -188,7 +188,7 @@
             return Ok(result);
         }
 
-        // Callback từ VNPay sau khi rút tiền - redirect về frontend thay vì trả JSON  
+        // Callback từ VNPay sau khi rút tiền 
         [HttpGet("withdrawal/callback")]
         public async Task<IActionResult> WithdrawalCallback()
         {
