@@ -58,7 +58,7 @@ namespace EcoFashionBackEnd.Services
         /// </summary>
         public async Task<DesignerPublicModel?> GetDesignerPublicProfile(Guid id)
         {
-            var designer = await _designerRepository.GetAll().Include(d => d.User).FirstOrDefaultAsync(d => d.DesignerId == id && d.Status == "Active");
+            var designer = await _designerRepository.GetAll().Include(d => d.User).FirstOrDefaultAsync(d => d.DesignerId == id && d.Status.ToLower() == "active");
 
             if (designer == null) return null;
 

@@ -60,7 +60,7 @@ namespace EcoFashionBackEnd.Services
         /// </summary>
         public async Task<SupplierPublicModel?> GetSupplierPublicProfile(Guid id)
         {
-            var supplier = await _supplierRepository.GetAll().Include(s => s.User).FirstOrDefaultAsync(s => s.SupplierId == id && s.Status == "Active");
+            var supplier = await _supplierRepository.GetAll().Include(s => s.User).FirstOrDefaultAsync(s => s.SupplierId == id && s.Status.ToLower() == "active");
 
             if (supplier == null) return null;
 
