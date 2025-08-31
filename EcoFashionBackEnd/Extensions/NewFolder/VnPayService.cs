@@ -143,7 +143,7 @@ namespace EcoFashionBackEnd.Extensions.NewFolder
             var vnp_BankCode = vnpay.GetResponseData("vnp_BankCode");
             var vnp_SecureHash = collections.FirstOrDefault(p => p.Key == "vnp_SecureHash").Value;
             var vnp_TransactionId = Convert.ToInt64(vnpay.GetResponseData("vnp_TransactionNo"));
-
+            
             // Lấy số tiền từ VNPay response (vnp_Amount được gửi với đơn vị là VNĐ x 100)
             var vnp_Amount = vnpay.GetResponseData("vnp_Amount");
             double amount = 0;
@@ -199,6 +199,6 @@ namespace EcoFashionBackEnd.Extensions.NewFolder
     }
 
 
-}
+ }
 
 

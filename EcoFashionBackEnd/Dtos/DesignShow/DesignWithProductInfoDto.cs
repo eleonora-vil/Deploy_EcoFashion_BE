@@ -18,5 +18,6 @@ namespace EcoFashionBackEnd.Dtos.DesignShow
         public DesignerPublicDto Designer { get; set; }
         public List<ProductDto> Products { get; set; }
         public DesignFeatureDto DesignFeatures { get; set; }
+        public DateTime? CreateAt { get; set; } 
     }
 }

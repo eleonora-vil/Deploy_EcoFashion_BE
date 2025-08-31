@@ -23,7 +23,7 @@ namespace EcoFashionBackEnd.Data.test
                     SupplierId = supplier.SupplierId,
                     TypeId = 1, // Organic Cotton
                     Name = "Premium Organic Cotton Fabric",
-                    Description = "High-quality organic cotton fabric suitable for sustainable fashion. GOTS certified with excellent breathability and softness.",
+                    Description = "Premium Organic Cotton Fabric (Vải Bông Hữu Cơ Cao Cấp) là loại vải được làm từ sợi bông trồng theo quy trình hữu cơ, không sử dụng thuốc trừ sâu, phân bón hóa học độc hại, hạt giống biến đổi gen, và tuân thủ các tiêu chuẩn nghiêm ngặt như GOTS. Vải này thân thiện với môi trường, an toàn cho da nhạy cảm, mềm mại, thoáng khí, hút ẩm tốt và kháng khuẩn tự nhiên, thường được dùng trong sản xuất quần áo trẻ em và các sản phẩm cao cấp.",
                     RecycledPercentage = 0m, // Organic cotton typically 0% recycled (Source: GOTS standard)
                     QuantityAvailable = 500,
                     PricePerUnit = 85000m, // 85.000 VNĐ/mét (đơn vị: nghìn VNĐ)
@@ -53,7 +53,7 @@ namespace EcoFashionBackEnd.Data.test
                     SupplierId = supplier.SupplierId,
                     TypeId = 2, // Recycled Cotton
                     Name = "Eco-Friendly Recycled Cotton Blend",
-                    Description = "Sustainable recycled cotton fabric made from post-consumer waste. Reduces landfill waste and water consumption.",
+                    Description = "Eco-Friendly Recycled Cotton Blend (Vải Pha Cotton Tái Chế Thân Thiện Môi Trường) là một loại vải được làm từ sự kết hợp của sợi bông tái chế với các loại sợi khác, mang lại lợi ích về môi trường như giảm rác thải và tiết kiệm tài nguyên, đồng thời giữ lại các đặc tính tốt của vải cotton.",
                     RecycledPercentage = 85m, // GRS minimum standard (Source: GRS Standard)
                     QuantityAvailable = 300,
                     PricePerUnit = 72000m, // 72.000 VNĐ/mét (đơn vị: nghìn VNĐ)
@@ -83,7 +83,7 @@ namespace EcoFashionBackEnd.Data.test
                     SupplierId = supplier.SupplierId,
                     TypeId = 3, // Hemp
                     Name = "Natural Hemp Fabric",
-                    Description = "Durable and sustainable hemp fabric with excellent strength and breathability. Naturally pest-resistant and low water usage.",
+                    Description = "Vải hemp là loại vải cao cấp, bền và thân thiện với môi trường, được dệt từ sợi cây gai dầu (Cannabis sativa), cùng loài với cây cần sa nhưng không có tác dụng gây nghiện. Vải hemp có khả năng thoáng khí, thấm hút mồ hôi tốt, chống khuẩn, chống nấm mốc, và càng giặt càng mềm mịn. Do những ưu điểm này, vải hemp được ứng dụng phổ biến trong sản xuất quần áo, phụ kiện và các sản phẩm thời trang bền vững.",
                     RecycledPercentage = 0m, // Hemp typically 0% recycled (Source: Textile Exchange)
                     QuantityAvailable = 200,
                     PricePerUnit = 95000m, // 95.000 VNĐ/mét (đơn vị: nghìn VNĐ)
@@ -113,7 +113,7 @@ namespace EcoFashionBackEnd.Data.test
                     SupplierId = supplier.SupplierId,
                     TypeId = 4, // Recycled Polyester
                     Name = "Recycled PET Polyester Fabric",
-                    Description = "High-performance recycled polyester made from PET bottles. Excellent durability and moisture-wicking properties.",
+                    Description = "Vải polyester tái chế (Recycled PET Polyester Fabric hay vải RPET) là loại vải nhân tạo được làm từ sợi polyester tổng hợp, tái chế từ các chai nhựa đã qua sử dụng như chai nước khoáng và nước giải khát. Loại vải này mang lại nhiều lợi ích về môi trường như giảm rác thải nhựa, tiết kiệm năng lượng và tài nguyên dầu mỏ, đồng thời giữ nguyên các đặc tính ưu việt của polyester truyền thống như độ bền cao, kháng mài mòn và dễ bảo quản.",
                     RecycledPercentage = 90m, // GRS minimum standard (Source: GRS Standard)
                     QuantityAvailable = 400,
                     PricePerUnit = 65000m, // 65.000 VNĐ/mét (đơn vị: nghìn VNĐ)
@@ -143,7 +143,7 @@ namespace EcoFashionBackEnd.Data.test
                     SupplierId = supplier.SupplierId,
                     TypeId = 5, // Bamboo Viscose
                     Name = "Bamboo Viscose Fabric",
-                    Description = "Soft and silky bamboo viscose fabric with excellent moisture absorption and antibacterial properties.",
+                    Description = "Vải Bamboo Viscose là loại vải sợi tre được sản xuất bằng quy trình hóa học để biến bột giấy tre thành sợi vải Viscose, mang lại cảm giác mềm mại, thoáng khí, hút ẩm tốt và có khả năng kháng khuẩn tự nhiên, thân thiện với da và môi trường. Loại vải này có bề ngoài giống lụa, ít nhăn, nhẹ, có khả năng không tích điện và phân hủy sinh học. Tuy nhiên, quy trình sản xuất hóa học gây ra một số lo ngại về tác động môi trường.",
                     RecycledPercentage = 0m, // Bamboo typically 0% recycled (Source: EU Ecolabel)
                     QuantityAvailable = 250,
                     PricePerUnit = 78000m, // 78.000 VNĐ/mét (đơn vị: nghìn VNĐ)
@@ -173,7 +173,7 @@ namespace EcoFashionBackEnd.Data.test
                     SupplierId = supplier.SupplierId,
                     TypeId = 6, // Tencel
                     Name = "Tencel Lyocell Fabric",
-                    Description = "Eco-friendly Tencel fabric made from sustainably sourced wood pulp. Excellent drape and moisture management.",
+                    Description = "Vải Tencel Lyocell là loại sợi sinh học cao cấp, được làm từ bột gỗ cây trồng bền vững như bạch đàn, có quy trình sản xuất thân thiện môi trường. Đặc điểm nổi bật của vải bao gồm sự mềm mại như lụa, khả năng hút ẩm và thoáng khí tốt, kháng khuẩn tự nhiên, chống nhăn, giữ màu bền và có khả năng phân hủy sinh học. Vải được ứng dụng rộng rãi trong may mặc, chăn ga gối nệm, đồ nội thất và các sản phẩm tiêu dùng khác.",
                     RecycledPercentage = 0m, // Tencel typically 0% recycled (Source: EU Ecolabel)
                     QuantityAvailable = 180,
                     PricePerUnit = 120000m, // 120.000 VNĐ/mét (đơn vị: nghìn VNĐ)
@@ -203,7 +203,7 @@ namespace EcoFashionBackEnd.Data.test
                     SupplierId = supplier.SupplierId,
                     TypeId = 7, // Recycled Wool
                     Name = "Recycled Wool Blend Fabric",
-                    Description = "Warm and durable recycled wool fabric made from post-consumer wool garments. Excellent insulation properties.",
+                    Description = "Vải Recycled Wool blend (hoặc vải pha len) là sự kết hợp giữa sợi len tự nhiên (từ cừu, dê, lạc đà) với một hoặc nhiều loại sợi tổng hợp khác (như polyester, cotton), tạo ra một loại vải có nhiều ưu điểm như: giữ ấm tốt, độ bền cao, chống nhăn, giữ form dáng tốt, dễ chăm sóc hơn vải len 100% và có chi phí hợp lý hơn. Vải wool blend mang lại sự thoải mái và đa dạng trong các sản phẩm may mặc, từ áo khoác, quần suit đến các sản phẩm thời trang khác. ",
                     RecycledPercentage = 88m, // RWS minimum standard (Source: RWS Standard)
                     QuantityAvailable = 120,
                     PricePerUnit = 150000m, // 150.000 VNĐ/mét (đơn vị: nghìn VNĐ)
@@ -233,7 +233,7 @@ namespace EcoFashionBackEnd.Data.test
                     SupplierId = supplier.SupplierId,
                     TypeId = 8, // Organic Silk
                     Name = "Organic Silk Fabric",
-                    Description = "Luxurious organic silk fabric with natural sheen and softness. Ethically produced without harming silkworms.",
+                    Description = "Vải lụa silk là loại vải tự nhiên, mềm mại, bóng mượt và sang trọng, được làm từ sợi tơ tằm có cấu trúc protein độc đáo, giúp phản chiếu ánh sáng tạo nên vẻ ngoài óng ánh đặc trưng. Vải silk có đặc tính thoáng khí, thấm hút ẩm tốt, mang lại cảm giác mát lạnh và thoải mái khi sử dụng. Vì quy trình sản xuất phức tạp, vải lụa silk thường có giá thành cao và được ứng dụng rộng rãi trong thời trang cao cấp, trang phục dự tiệc, váy cưới và các sản phẩm nội thất sang trọng.",
                     RecycledPercentage = 0m, // Organic silk typically 0% recycled (Source: GOTS Standard)
                     QuantityAvailable = 80,
                     PricePerUnit = 250000m, // 250.000 VNĐ/mét (đơn vị: nghìn VNĐ)
@@ -263,7 +263,7 @@ namespace EcoFashionBackEnd.Data.test
                     SupplierId = supplier.SupplierId,
                     TypeId = 9, // Recycled Nylon
                     Name = "Recycled Nylon Fabric",
-                    Description = "High-performance recycled nylon fabric made from fishing nets and industrial waste. Excellent durability and stretch.",
+                    Description = "Vải nylon tái chế (Recycled Nylon Fabric) là loại vải được sản xuất từ các vật liệu nylon đã qua sử dụng, chẳng hạn như lưới đánh cá cũ hoặc thảm cũ, sau đó được tái chế thành sợi và dệt lại thành vải. Vải này nổi bật với tính bền vững, thân thiện với môi trường do giảm thiểu rác thải nhựa, đồng thời vẫn giữ được các đặc tính tốt của nylon như độ bền, khả năng chống thấm nước, và cảm giác mềm mại. ",
                     RecycledPercentage = 80m, // GRS minimum standard (Source: GRS Standard)
                     QuantityAvailable = 150,
                     PricePerUnit = 95000m, // 95.000 VNĐ/mét (đơn vị: nghìn VNĐ)
@@ -293,7 +293,7 @@ namespace EcoFashionBackEnd.Data.test
                     SupplierId = supplier.SupplierId,
                     TypeId = 10, // Organic Linen
                     Name = "Organic Linen Fabric",
-                    Description = "Natural organic linen fabric with excellent breathability and moisture absorption. Perfect for summer clothing.",
+                    Description = "Vải lanh hữu cơ (Organic Linen Fabric) là chất liệu tự nhiên, an toàn cho da và môi trường, được làm từ sợi cây lanh trồng theo phương pháp hữu cơ, không sử dụng hóa chất độc hại. Đặc điểm của loại vải này là mềm mại, thoáng mát, thấm hút mồ hôi tốt, cực kỳ bền chắc và có khả năng phân hủy sinh học, rất phù hợp cho thời trang bền vững và nội thất.",
                     RecycledPercentage = 0m, // Organic linen typically 0% recycled (Source: GOTS Standard)
                     QuantityAvailable = 100,
                     PricePerUnit = 180000m, // 180.000 VNĐ/mét (đơn vị: nghìn VNĐ)
@@ -323,7 +323,7 @@ namespace EcoFashionBackEnd.Data.test
                     SupplierId = supplier.SupplierId,
                     TypeId = 11, // Recycled Denim
                     Name = "Recycled Denim Fabric",
-                    Description = "Sustainable recycled denim fabric made from post-consumer jeans. Reduces water and energy consumption significantly.",
+                    Description = "Recycled Denim là loại vải cotton dày, chắc, dệt chéo bằng sợi ngang và sợi dọc, tạo ra các đường sọc chéo rõ nét trên bề mặt. Vải denim đặc trưng với độ bền cao, chịu mài mòn tốt, khả năng giữ màu và có thể nhuộm bằng thuốc nhuộm chàm để tạo màu xanh đặc trưng. Ngày nay, denim còn được pha trộn với sợi polyester hoặc lycra để tăng độ mềm mại, co giãn, và ứng dụng đa dạng trong quần áo, phụ kiện thời trang, và đồ nội thất.",
                     RecycledPercentage = 85m, // GRS minimum standard (Source: GRS Standard)
                     QuantityAvailable = 200,
                     PricePerUnit = 85000m, // 85.000 VNĐ/mét (đơn vị: nghìn VNĐ)
@@ -353,7 +353,7 @@ namespace EcoFashionBackEnd.Data.test
                     SupplierId = supplier.SupplierId,
                     TypeId = 12, // Organic Alpaca
                     Name = "Organic Alpaca Wool Fabric",
-                    Description = "Luxurious organic alpaca wool fabric with exceptional softness and warmth. Ethically sourced from free-range alpacas.",
+                    Description = "Vải len Alpaca là một loại vải tự nhiên cao cấp, được làm từ lớp lông mềm mại, ấm áp và bền chắc của loài alpaca, động vật bản địa ở dãy Andes, Nam Mỹ. Vải có đặc tính mềm, không gây ngứa như len cừu, có khả năng giữ ấm và thoáng khí, và thường được dùng để sản xuất quần áo, khăn choàng và các sản phẩm giữ ấm khác.",
                     RecycledPercentage = 0m, // Organic alpaca typically 0% recycled (Source: RWS Standard)
                     QuantityAvailable = 60,
                     PricePerUnit = 350000m, // 350.000 VNĐ/mét (đơn vị: nghìn VNĐ)

@@ -360,6 +360,8 @@ namespace EcoFashionBackEnd.Services
             }
         }
 
+
+
         public async Task<FabricUsageResponse> CalculateFabricUsageByMaterialAsync(int designId)
         {
             var design = await _designRepository.GetByIdAsync(designId);

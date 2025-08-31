@@ -130,10 +130,11 @@ namespace EcoFashionBackEnd.Services
             return response;
         }
 
-
-        public async Task<WalletTransactionDto> RequestWithdrawalAsync(int userId, double amount, string? description = null)
+        public async Task<ApiResult<WalletTransactionDto>> RequestWithdrawalAsync(int userId, double amount, string? description = null)
         {
+            // 🔹 Lấy wallet, không track EF để tránh nhầm ID
             var wallet = await _walletRepository.GetAll()
+                .AsNoTracking()
                 .FirstOrDefaultAsync(w => w.UserId == userId);
 
             if (wallet == null)
@@ -142,6 +143,41 @@ namespace EcoFashionBackEnd.Services
             if (wallet.Balance < amount)
                 throw new Exception("Insufficient balance");
 
+            //// 🔹 Kiểm tra lần rút gần nhất (fix grouping điều kiện)
+            //var lastWithdrawal = await _walletTransactionRepository.GetAll()
+            //    .Where(t => t.WalletId == wallet.WalletId
+            //                && t.Type == TransactionType.Withdrawal
+            //                && (t.Status == Entities.TransactionStatus.Success
+            //                    || t.Status == Entities.TransactionStatus.Pending))
+            //    .OrderByDescending(t => t.CreatedAt)
+            //    .FirstOrDefaultAsync();
+
+            //if (lastWithdrawal != null && lastWithdrawal.CreatedAt.AddDays(30) > DateTime.UtcNow)
+            //{
+            //    var remaining = (lastWithdrawal.CreatedAt.AddDays(30) - DateTime.UtcNow).Days;
+            //    return ApiResult<WalletTransactionDto>.Fail($"Bạn chỉ có thể rút tiền sau {remaining} ngày nữa.");
+            //}
+
+            // Lấy tháng hiện tại
+            var startOfMonth = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
+
+            // Kiểm tra xem đã có giao dịch rút tiền thành công trong tháng chưa
+            var existingWithdrawal = await _walletTransactionRepository.GetAll()
+                .Where(t => t.WalletId == wallet.WalletId
+                            && t.Type == TransactionType.Withdrawal
+                            && (t.Status == Entities.TransactionStatus.Success
+                                || t.Status == Entities.TransactionStatus.Pending) 
+                            &&t.CreatedAt >= startOfMonth)
+                .OrderByDescending(t => t.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            if (existingWithdrawal != null)
+            {
+                // Đã có giao dịch rút tiền thành công trong tháng này
+                return ApiResult<WalletTransactionDto>.Fail($"Bạn chỉ được rút tiền 1 lần mỗi tháng. Vui lòng thử lại vào tháng sau.");
+            }
+
+            // 🔹 Tạo transaction pending
             var transaction = new WalletTransaction
             {
                 WalletId = wallet.WalletId,
@@ -157,7 +193,8 @@ namespace EcoFashionBackEnd.Services
             await _walletTransactionRepository.AddAsync(transaction);
             await _walletTransactionRepository.Commit();
 
-            return new WalletTransactionDto
+            // 🔹 Chuyển sang DTO
+            var dto = new WalletTransactionDto
             {
                 Id = transaction.Id,
                 Amount = transaction.Amount,
@@ -169,7 +206,9 @@ namespace EcoFashionBackEnd.Services
                 CreatedAt = transaction.CreatedAt,
                 OrderId = transaction.OrderId,
                 OrderGroupId = transaction.OrderGroupId
-            }; 
+            };
+
+            return ApiResult<WalletTransactionDto>.Succeed(dto);
         }
 
 
@@ -197,6 +236,47 @@ namespace EcoFashionBackEnd.Services
 
             return ApiResult<object>.Succeed(new { PaymentUrl = paymentUrl });
         }
+
+        //public async Task<ApiResult<object>> CreateWithdrawalPaymentAsync(int walletTransactionId, int userId, HttpContext httpContext)
+        //{
+        //    var withdrawalRequest = await _walletTransactionRepository.GetByIdAsync(walletTransactionId);
+        //    if (withdrawalRequest == null)
+        //        return ApiResult<object>.Fail("Không tìm thấy yêu cầu rút tiền");
+
+        //    if (withdrawalRequest.Type != TransactionType.Withdrawal)
+        //        return ApiResult<object>.Fail("TransactionId không phải yêu cầu rút tiền");
+
+        //    if (withdrawalRequest.Status != Entities.TransactionStatus.Pending)
+        //        return ApiResult<object>.Fail("Yêu cầu này đã được xử lý rồi");
+
+        //    // 🔒 Check 30 ngày từ lần rút thành công gần nhất
+
+        //    var lastWithdrawal = await _walletTransactionRepository.GetAll()
+        //         .Include(t => t.Wallet)
+        //         .Where(t => t.Wallet.UserId == userId
+        //                     && t.Type == TransactionType.Withdrawal
+        //                     && t.Status == Entities.TransactionStatus.Success)
+        //         .OrderByDescending(t => t.CreatedAt)
+        //         .FirstOrDefaultAsync();
+
+        //    if (lastWithdrawal != null && lastWithdrawal.CreatedAt.AddDays(30) > DateTime.UtcNow)
+        //    {
+        //        var remaining = (lastWithdrawal.CreatedAt.AddDays(30) - DateTime.UtcNow).Days;
+        //        return ApiResult<object>.Fail($"Bạn chỉ có thể rút tiền sau {remaining} ngày nữa.");
+        //    }
+
+        //    // ❗ Không thay đổi trạng thái/số dư cho đến khi VNPay callback
+        //    var vnPayModel = new VnPaymentRequestModel
+        //    {
+        //        OrderId = withdrawalRequest.Id,
+        //        Amount = withdrawalRequest.Amount,
+        //        CreatedDate = DateTime.Now
+        //    };
+
+        //    var paymentUrl = await _vnPayService.CreateWithdrawalPaymentUrlAsync(httpContext, vnPayModel);
+
+        //    return ApiResult<object>.Succeed(new { PaymentUrl = paymentUrl });
+        //}
 
         public async Task<VnPaymentResponseModel> HandleVNPayWithdrawalReturnAsync(IQueryCollection collection)
         {
@@ -522,6 +602,36 @@ namespace EcoFashionBackEnd.Services
 
             return baseDescription;
         }
+
+        public async Task<List<GetWithdrawalRequestDto>> GetWithdrawalRequestsAsync()
+        {
+
+            var pendingRequests = await _walletTransactionRepository.GetAll().AsNoTracking()
+
+                .Include(t => t.Wallet)
+                    .ThenInclude(w => w.User)
+
+                .Where(t => t.Type == TransactionType.Withdrawal && t.Status == Entities.TransactionStatus.Pending)
+
+                .OrderByDescending(t => t.CreatedAt)
+                .ToListAsync();
+
+            return pendingRequests.Select(t => new GetWithdrawalRequestDto
+            {
+                TransactionId = t.Id,
+                Name = t.Wallet?.User?.FullName ?? "N/A",
+                Amount = t.Amount,
+                BalanceBefore = t.BalanceBefore,
+                BalanceAfter = t.BalanceAfter,
+                Type = t.Type.ToString(),
+                Status = t.Status.ToString(),
+                Description = t.Description,
+                CreatedAt = t.CreatedAt,
+            }).ToList();
+        }
+
+
+
     }
 }
 

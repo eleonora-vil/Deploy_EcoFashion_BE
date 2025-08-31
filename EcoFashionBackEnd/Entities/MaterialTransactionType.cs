@@ -5,54 +5,37 @@ namespace EcoFashionBackEnd.Entities
     /// </summary>
     public enum MaterialTransactionType
     {
-        /// <summary>
-        /// Nhập kho từ supplier (khi material được approve)
-        /// </summary>
+        // Nhập kho từ supplier (khi material được approve)       
         SupplierReceipt,
         
-        /// <summary>
-        /// Bán material cho customer (khi order payment thành công)
-        /// </summary>
+        // Bán material cho customer (khi order payment thành công)    
         CustomerSale,
         
-        /// <summary>
-        /// Điều chỉnh thủ công bởi admin/supplier
-        /// </summary>
+        // Điều chỉnh thủ công bởi admin/supplier     
         ManualAdjustment,
         
-        /// <summary>
-        /// Sử dụng để sản xuất (designer sử dụng material)
-        /// </summary>
+        // Sử dụng để sản xuất (designer sử dụng material)       
         ProductionUse,
         
-        /// <summary>
-        /// Chuyển kho vào
-        /// </summary>
+        // Chuyển kho vào       
         TransferIn,
         
-        /// <summary>
-        /// Chuyển kho ra
-        /// </summary>
+        // Chuyển kho ra        
         TransferOut,
         
-        /// <summary>
-        /// Trả hàng từ customer
-        /// </summary>
+        // Trả hàng từ customer
+        
         CustomerReturn,
         
-        /// <summary>
-        /// Trả hàng cho supplier
-        /// </summary>
+        // Trả hàng cho supplier
+        
         SupplierReturn,
         
-        /// <summary>
-        /// Hỏng/mất mát
-        /// </summary>
+        // Hỏng/mất mát
         Damaged,
         
-        /// <summary>
-        /// Kiểm kê
-        /// </summary>
+
+        // Kiểm kê
         StockAudit
     }
     

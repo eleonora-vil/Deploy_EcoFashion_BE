@@ -14,6 +14,7 @@ namespace EcoFashionBackEnd.Services
         private readonly AppDbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly WalletService _walletService;
+        private readonly InventoryService _inventoryService;
         private readonly IConfiguration _configuration;
 
         public OrderService(
@@ -21,13 +22,43 @@ namespace EcoFashionBackEnd.Services
             AppDbContext dbContext, 
             IMapper mapper,
             WalletService walletService,
+            InventoryService inventoryService,
             IConfiguration configuration)
         {
             _orderRepository = repository;
             _dbContext = dbContext;
             _mapper = mapper;
             _walletService = walletService;
+            _inventoryService = inventoryService;
             _configuration = configuration;
+        }
+        // After order is delivered, if buyer is a designer, add purchased materials to their inventory
+        private async Task AddMaterialsToDesignerInventoryAsync(int orderId, int buyerUserId)
+        {
+            // Check if buyer is a designer
+            var designer = await _dbContext.Designers.FirstOrDefaultAsync(d => d.UserId == buyerUserId);
+            if (designer == null)
+            {
+                return; // buyer is not a designer
+            }
+
+            // Get material order details
+            var materialDetails = await _dbContext.OrderDetails
+                .Where(od => od.OrderId == orderId && od.Type == OrderDetailType.material && od.MaterialId.HasValue)
+                .Select(od => new { od.MaterialId, od.Quantity })
+                .ToListAsync();
+
+            if (!materialDetails.Any())
+            {
+                return;
+            }
+
+            // Aggregate quantities per materialId
+            var addMap = materialDetails
+                .GroupBy(x => x.MaterialId!.Value)
+                .ToDictionary(g => g.Key, g => g.Sum(x => (decimal)x.Quantity));
+
+            await _inventoryService.AddDesignerMaterialsAsync(designer.DesignerId, addMap);
         }
 
         private OrderModel MapOrderToModel(Order order)
@@ -213,6 +244,8 @@ namespace EcoFashionBackEnd.Services
                     order.Status = OrderStatus.delivered;
                     // Trigger settlement when delivered
                     await ProcessSettlementAsync(order);
+                    // After settlement, if buyer is a designer, add materials to their inventory
+                    await AddMaterialsToDesignerInventoryAsync(order.OrderId, order.UserId);
                     break;
                 case FulfillmentStatus.Canceled:
                     order.Status = OrderStatus.returned;
@@ -267,6 +300,7 @@ namespace EcoFashionBackEnd.Services
             
             // Process settlement (90% to seller, 10% platform commission)
             await ProcessSettlementAsync(order);
+            await AddMaterialsToDesignerInventoryAsync(order.OrderId, order.UserId);
             
             await _dbContext.SaveChangesAsync();
             return true;
@@ -419,6 +453,5 @@ namespace EcoFashionBackEnd.Services
             }
         }
 
-        // Sub-order feature removed: keeping OrderService focused on single-order flow per seller
     }
 }

@@ -1,0 +1,147 @@
+> Hỗ trợ giúp mình duyệt kiến trúc kho của Designer (Kho nguyên liệu DesignerMaterialInventory ) ở backend hỗ trợ xem và tóm tắt các phương thức sử dụng gồm Entity Controller 
+  Service.
+
+
+● I'll help you review the Designer Material Inventory architecture in the backend. Let me search for the relevant files and understand the structure.
+
+
+● Search(pattern: "DesignerMaterialInventory")
+  ⎿  Found 22 files (ctrl+r to expand)
+
+
+● Search(pattern: "MaterialInventory")
+  ⎿  Found 36 files (ctrl+r to expand)
+
+
+● Search(pattern: "**/*Material*Inventory*")
+  ⎿  Found 17 files (ctrl+r to expand)
+
+
+● Now let me read the core files to understand the architecture:
+
+
+● Read(EcoFashionBackEnd/EcoFashionBackEnd/Entities/DesignersMaterialsInventory.cs)
+  ⎿  Read 28 lines (ctrl+r to expand)
+
+
+● Read(EcoFashionBackEnd/EcoFashionBackEnd/Controllers/DesignerMaterialInventoryController.cs)
+  ⎿  Read 159 lines (ctrl+r to expand)
+
+
+● Read(EcoFashionBackEnd/EcoFashionBackEnd/Services/DesignerMaterialInventoryService.cs)
+  ⎿  Read 194 lines (ctrl+r to expand)
+
+
+● Now let me also look at the DTOs and Request models to complete the picture:
+
+
+● Read(EcoFashionBackEnd/EcoFashionBackEnd/Dtos/DesignerMaterialInventory/DesignerMaterialInventoryDto.cs)
+  ⎿  Read 18 lines (ctrl+r to expand)
+
+
+● Read(EcoFashionBackEnd/EcoFashionBackEnd/Common/Payloads/Requests/CreateDesignerMaterialInventoryRequest.cs)
+  ⎿  Read 10 lines (ctrl+r to expand)
+
+
+● Read(EcoFashionBackEnd/EcoFashionBackEnd/Common/Payloads/Requests/UpdateDesignerMaterialInventoryRequest.cs)
+  ⎿  Read 9 lines (ctrl+r to expand)
+
+
+● Tóm tắt kiến trúc Designer Material Inventory
+
+
+  Entity Layer (DesignerMaterialInventory)
+
+
+  File: Entities/DesignersMaterialsInventory.cs:7
+
+
+  Thuộc tính chính:
+
+
+  - InventoryId (Primary Key) - ID tự động tăng
+  - WarehouseId + MaterialId - Foreign Keys liên kết với Warehouse và Material
+  - Quantity, Cost - Số lượng và giá thành vật liệu
+  - LastBuyDate, Status - Ngày mua gần nhất và trạng thái kho
+  - Navigation Properties đến Warehouse, Material, và MaterialInventoryTransactions
+
+
+  Controller Layer (DesignerMaterialInventoryController)
+
+
+  File: Controllers/DesignerMaterialInventoryController.cs:14
+
+
+  API Endpoints chính:
+
+
+  - GET /api/DesignerMaterialInventories - Lấy tất cả kho vật liệu
+  - GET /api/DesignerMaterialInventories/{id} - Lấy kho theo ID
+  - GET /api/DesignerMaterialInventories/GetStoredMaterial/{designerId} - Lấy kho theo Designer ID
+  - GET /api/DesignerMaterialInventories/GetStoredMaterial - Lấy kho của Designer hiện tại
+  - POST /api/DesignerMaterialInventories - Tạo mới kho vật liệu
+  - PUT /api/DesignerMaterialInventories/{id} - Cập nhật kho
+  - DELETE /api/DesignerMaterialInventories/{id} - Xóa kho
+
+
+  Tính năng bảo mật:
+
+
+  - Xác thực JWT Claims ClaimTypes.NameIdentifier
+  - Kiểm tra quyền Designer thông qua DesignerService
+
+
+  Service Layer (DesignerMaterialInventoryService)
+
+
+  File: Services/DesignerMaterialInventoryService.cs:15
+
+
+  Phương thức chính:
+
+
+  CRUD Operations:
+
+
+  - GetAllDesignerMaterialInventoriesAsync() - Lấy tất cả với Include Material
+  - GetDesignerMaterialInventoryByIdAsync(int id) - Lấy theo ID
+  - CreateDesignerMaterialInventoryAsync() - Tạo mới với tự động cập nhật Status
+  - UpdateDesignerMaterialInventoryAsync() - Cập nhật với tự động cập nhật Status
+  - DeleteDesignerMaterialInventoryAsync() - Xóa với kiểm tra quyền
+
+
+  Specialized Methods:
+
+
+  - GetDesignerMaterialInventoryByDesignerIdAsync() - Trả về DTO chi tiết với sustainability score
+  - GetDesignerMaterialInventoryOfDesigner() - Trả về summary DTO với status tính toán
+
+
+  Tính năng đặc biệt:
+
+
+  - Auto Status Management: Tự động set in_stock/out_of_stock dựa trên Quantity
+  - Sustainability Integration: Tích hợp SustainabilityService để tính sustainability score
+  - Rich Data Loading: Include Material, MaterialImages, Supplier thông qua Entity Framework
+  - Authorization: Kiểm tra Designer role trong mọi thao tác
+
+
+  Dependencies:
+
+
+  - IRepository<DesignerMaterialInventory, int> - Repository pattern
+  - AutoMapper - Object mapping
+  - AppDbContext - Entity Framework context
+  - SustainabilityService - Tính toán sustainability metrics
+
+
+  Request/Response Models:
+
+
+  - CreateDesignerMaterialInventoryRequest - MaterialId, Quantity, Cost
+  - UpdateDesignerMaterialInventoryRequest - Quantity, Cost
+  - DesignerMaterialInventoryDto - DTO đầy đủ thông tin
+  - DesignerMaterialInventorySummaryDto - DTO tóm tắt với status tính toán
+
+
+  Kiến trúc tuân thủ pattern Controller → Service → Repository với tích hợp sustainability features và authorization mạnh mẽ.

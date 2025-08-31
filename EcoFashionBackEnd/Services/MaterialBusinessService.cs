@@ -76,18 +76,21 @@ namespace EcoFashionBackEnd.Services
                 RecycledPercentage = request.RecycledPercentage,
                 QuantityAvailable = request.QuantityAvailable,
                 PricePerUnit = request.PricePerUnit,
-                DocumentationUrl = request.DocumentationUrl,
+                DocumentationUrl = "https://plus.unsplash.com/premium_photo-1737073520175-b3303a6e1e76?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+               // 1.2.3. sustainability 
                 CarbonFootprint = request.CarbonFootprint,
                 CarbonFootprintUnit = "kg CO2e/mét",
                 WaterUsage = request.WaterUsage,
                 WaterUsageUnit = "lít/mét",
                 WasteDiverted = request.WasteDiverted,
                 WasteDivertedUnit = "%",
+                //4. Transport
                 ProductionCountry = request.ProductionCountry,
                 ProductionRegion = request.ProductionRegion,
                 ManufacturingProcess = request.ManufacturingProcess,
+                //5. Certification
                 CertificationDetails = request.CertificationDetails,
-                CertificationExpiryDate = request.CertificationExpiryDate,
+                CertificationExpiryDate = DateTime.UtcNow.AddDays(30),
                 // Use calculated transport info from CalculateTransportInfo (supports override)
                 TransportDistance = request.TransportDistance,
                 TransportMethod = request.TransportMethod,

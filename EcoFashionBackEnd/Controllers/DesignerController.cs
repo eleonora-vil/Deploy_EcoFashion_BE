@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using EcoFashionBackEnd.Services;
 using EcoFashionBackEnd.Dtos;
+using EcoFashionBackEnd.Dtos.Design;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -331,4 +332,19 @@ public class DesignerController : ControllerBase
             return NotFound(ApiResult<object>.Fail("Không tìm thấy liên kết giữa nhà thiết kế và nhà cung cấp này."));
         }
     }
+
+
+    [HttpGet("designers/{designerId}/material-usage")]
+    public async Task<IActionResult> GetDesignerMaterialUsage(Guid designerId)
+    {
+
+        var usage = await _designerService.GetDesignerMaterialUsageAsync(designerId);
+        return Ok(ApiResult<List<DesignerUsageSummaryDto>>.Succeed(usage));
+    }
+
+
+
+
+
+
 }

@@ -8,7 +8,7 @@ namespace EcoFashionBackEnd.Dtos.DesignShow
         public string Name { get; set; }
         public float RecycledPercentage { get; set; }
         public string Description { get; set; }
-
+        public DateTime? CreateAt { get; set; }
         public string CareInstruction { get; set; }
         public string? ItemTypeName { get; set; }
         public decimal? SalePrice { get; set; }

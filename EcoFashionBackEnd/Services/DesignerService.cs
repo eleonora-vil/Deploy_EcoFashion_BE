@@ -2,6 +2,7 @@
 using EcoFashionBackEnd.Common.Payloads.Requests;
 using EcoFashionBackEnd.Common.Payloads.Responses;
 using EcoFashionBackEnd.Dtos;
+using EcoFashionBackEnd.Dtos.Design;
 using EcoFashionBackEnd.Entities;
 using EcoFashionBackEnd.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -16,21 +17,33 @@ namespace EcoFashionBackEnd.Services
     {
         private readonly IRepository<Designer, Guid> _designerRepository;
         private readonly IRepository<Supplier, Guid> _supplierRepository;
+        private readonly IRepository<MaterialInventoryTransaction, int> _transactionRepository;
+        private readonly IRepository<DesignerMaterialInventory, int> _inventoryRepository;
+        private readonly IRepository<Material, int> _materialRepository;
+        private readonly IRepository<MaterialType, int> _materialTypeRepository;
         private readonly IMapper _mapper;
         private readonly AppDbContext _dbContext;
 
         public DesignerService(
             IRepository<Designer, Guid> designerRepository,
             IRepository<Supplier, Guid> supplierRepository,
+            IRepository<MaterialInventoryTransaction, int> transactionRepository,
+            IRepository<DesignerMaterialInventory, int> inventoryRepository,
+            IRepository<Material, int> materialRepository,
+            IRepository<MaterialType, int> materialTypeRepository,
             IMapper mapper,
             AppDbContext dbContext)
         {
             _designerRepository = designerRepository;
             _supplierRepository = supplierRepository;
+            _transactionRepository = transactionRepository;
+            _inventoryRepository = inventoryRepository;
+            _materialRepository = materialRepository;
+            _materialTypeRepository = materialTypeRepository;
             _mapper = mapper;
             _dbContext = dbContext;
         }
-      
+        
         public async Task<List<DesignerSummaryModel>> GetPublicDesigners(int page = 1, int pageSize = 12)
         {
             var query = _designerRepository.GetAll().Include(d => d.User);
@@ -58,7 +71,7 @@ namespace EcoFashionBackEnd.Services
         /// </summary>
         public async Task<DesignerPublicModel?> GetDesignerPublicProfile(Guid id)
         {
-            var designer = await _designerRepository.GetAll().Include(d => d.User).FirstOrDefaultAsync(d => d.DesignerId == id && d.Status.ToLower() == "active");
+            var designer = await _designerRepository.GetAll().Include(d => d.User).FirstOrDefaultAsync(d => d.DesignerId == id && d.Status == "Active");
 
             if (designer == null) return null;
 
@@ -384,5 +397,49 @@ namespace EcoFashionBackEnd.Services
             var result = await _dbContext.SaveChangesAsync();
             return result > 0;
         }
+
+        public async Task<List<DesignerUsageSummaryDto>> GetDesignerMaterialUsageAsync(Guid designerId)
+        {
+            var allTypes = await _materialTypeRepository.GetAll().ToListAsync();
+
+            var usageQuery = await _transactionRepository.GetAll()
+                .Include(t => t.MaterialInventory)
+                    .ThenInclude(mi => mi.Material)
+                        .ThenInclude(m => m.MaterialType)
+                .Include(t => t.MaterialInventory.Warehouse)
+                .Where(t => t.TransactionType == "Usage"
+                            && t.MaterialInventory.Warehouse.DesignerId == designerId)
+                .ToListAsync();
+
+            var groupedUsage = usageQuery
+               .GroupBy(t => new
+               {
+                   t.MaterialInventory.Material.MaterialType.TypeId,
+                   t.MaterialInventory.Material.MaterialType.TypeName
+               })
+                .Select(g => new
+                {
+                    TypeId = g.Key.TypeId,
+                    TypeName = g.Key,
+                    Total = g.Sum(x => Math.Abs(x.QuantityChanged))
+                })
+                .ToDictionary(x => x.TypeId, x => x.Total);
+
+            
+            var result = allTypes.Select(mt => new DesignerUsageSummaryDto
+            {
+                TypeId = mt.TypeId, 
+                MaterialTypeName = mt.TypeName,
+                TotalUsedMeters = groupedUsage.ContainsKey(mt.TypeId)
+                          ? groupedUsage[mt.TypeId]
+                          : 0
+            }).ToList();
+
+            return result;
+        }
+
+
+
+
     }
 }

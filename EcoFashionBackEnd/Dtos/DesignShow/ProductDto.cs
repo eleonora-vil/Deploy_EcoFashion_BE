@@ -11,5 +11,6 @@
         public float SizeRatio { get; set; }
         public int QuantityAvailable { get; set; }
         public int DesignId { get; set; }
+        public DateTime? LastUpdated { get; set; }
     }
 }

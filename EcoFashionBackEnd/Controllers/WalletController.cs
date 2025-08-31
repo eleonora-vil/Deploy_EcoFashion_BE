@@ -92,7 +92,16 @@
 
             return Ok(transaction);
         }
+        [HttpGet("withdrawal-requests")]
+        public async Task<IActionResult> GetWithdrawalRequests()
+        {
+            var requests = await _walletService.GetWithdrawalRequestsAsync();
 
+            if (requests == null || !requests.Any())
+                return Ok(ApiResult<List<GetWithdrawalRequestDto>>.Fail("No withdrawal requests found"));
+
+            return Ok(ApiResult<List<GetWithdrawalRequestDto>>.Succeed(requests));
+        }
 
         // taọ link deposit 
         [HttpPost("deposit")]
@@ -116,35 +125,36 @@
         public async Task<IActionResult> DepositCallback()
         {
             var query = HttpContext.Request.Query;
+
             var result = await _walletService.HandleVNPayDepositReturnAsync(query);
 
-            // Lấy URL cơ sở (base URL) từ file cấu hình
+            // Tạo URL redirect về frontend với thông tin kết quả
             string frontendUrl = _configuration["Frontend:WalletUrl"] ?? "http://localhost:5173";
             string redirectUrl;
 
             if (result == null)
             {
-                // Giao dịch thất bại
+                // Nạp tiền thất bại - redirect về error page
                 redirectUrl = $"{frontendUrl}/wallet?error=deposit_failed";
             }
             else if (result.VnPayResponseCode == "00")
             {
-                // Giao dịch thành công
+                // Lấy orderId để xác định giao dịch, nhưng sử dụng amount từ VNPay response
+                var orderId = int.Parse(result.OrderId);
                 var amount = result.Amount;
+                
+                // Nạp tiền thành công - redirect về success page với thông tin
                 redirectUrl = $"{frontendUrl}/wallet?success=deposit&transactionId={result.TransactionId}&amount={amount}";
             }
             else
             {
-                // Giao dịch thất bại với mã lỗi VNPay
+                // Nạp tiền thất bại với mã lỗi VNPay - redirect về error page  
                 redirectUrl = $"{frontendUrl}/wallet?error=deposit_failed&code={result.VnPayResponseCode}";
             }
 
-            // Redirect về frontend
+            // Redirect về frontend thay vì trả JSON
             return Redirect(redirectUrl);
         }
-
-
-
         // taọ RequestWithdrawal
         [HttpPost("withdrawal/request")]
         public async Task<IActionResult> RequestWithdrawal([FromBody] WithdrawalRequestDto request)
@@ -159,7 +169,7 @@
 
             try
             {
-                var transaction = await _walletService.RequestWithdrawalAsync(userId, request.Amount, request.Description);
+                var transaction = await _walletService.RequestWithdrawalAsync(userId, request.Amount);
                 return Ok(transaction); // hoặc map sang DTO trước
             }
             catch (Exception ex)
@@ -188,31 +198,37 @@
             return Ok(result);
         }
 
-        // Callback từ VNPay sau khi rút tiền 
+        // Callback từ VNPay sau khi rút tiền - redirect về frontend thay vì trả JSON  
         [HttpGet("withdrawal/callback")]
         public async Task<IActionResult> WithdrawalCallback()
         {
+            // 1️⃣ VNPay gọi GET với query vnp_*
             var query = HttpContext.Request.Query;
 
+            // 2️⃣ Gọi service để handle transaction
             var result = await _walletService.HandleVNPayWithdrawalReturnAsync(query);
 
+            // 3️⃣ Tạo URL redirect về frontend với thông tin kết quả
             string frontendUrl = _configuration["Frontend:WalletUrl"] ?? "http://localhost:5173";
             string redirectUrl;
 
             if (result == null)
             {
-                // Rút tiền thất bại 
+                // Rút tiền thất bại - redirect về error page
                 redirectUrl = $"{frontendUrl}/wallet?error=withdrawal_failed";
             }
             else if (result.VnPayResponseCode == "00")
             {
-                // Rút tiền thành công 
+                // Lấy orderId để xác định giao dịch, nhưng sử dụng amount từ VNPay response
+                var orderId = int.Parse(result.OrderId);
                 var amount = result.Amount;
+                
+                // Rút tiền thành công - redirect về success page với thông tin
                 redirectUrl = $"{frontendUrl}/wallet?success=withdrawal&transactionId={result.TransactionId}&amount={amount}";
             }
             else
             {
-                // Rút tiền thất bại với mã lỗi VNPay
+                // Rút tiền thất bại với mã lỗi VNPay - redirect về error page
                 redirectUrl = $"{frontendUrl}/wallet?error=withdrawal_failed&code={result.VnPayResponseCode}";
             }
 

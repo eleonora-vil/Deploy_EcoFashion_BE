@@ -71,7 +71,7 @@ namespace EcoFashionBackEnd.Services
                             MeterUsed = (decimal)dm.MeterUsed
                         })
                         .ToList(),
-                    ProductCount = d.Products.Count
+                    ProductCount = d.Products.Count,
                 })
                 .ToListAsync();
         }
@@ -275,7 +275,7 @@ namespace EcoFashionBackEnd.Services
                     DesignImageUrls = d.DesignImages
                         .Select(di => di.Image.ImageUrl)
                         .ToList(),
-
+                    CreateAt = d.CreatedAt,
                     // Keep material selection minimal
                     Materials = d.DesignsMaterials
                         .Select(dm => new MaterialDto
@@ -377,8 +377,11 @@ namespace EcoFashionBackEnd.Services
                     QuantityAvailable = p.Inventories
                         .Where(pi => pi.WarehouseId == productWarehouseId)
                         .Select(pi => pi.QuantityAvailable)
-                        .FirstOrDefault()
-                       
+                        .FirstOrDefault(),
+                    LastUpdated = p.Inventories
+                        .Where(pi => pi.WarehouseId == productWarehouseId)
+                        .Select(pi => pi.LastUpdated)
+                        .FirstOrDefault(),
                 }))
                 .ToListAsync();
 

@@ -10,23 +10,26 @@ namespace EcoFashionBackEnd.Services
         private readonly WalletService _walletService;
         private readonly IConfiguration _configuration;
         private readonly MaterialInventoryService _materialInventoryService;
+        private readonly SettlementService _settlementService;
 
         public OrderPaymentService(
-            AppDbContext context, 
-            WalletService walletService, 
+            AppDbContext context,
+            WalletService walletService,
             IConfiguration configuration,
-            MaterialInventoryService materialInventoryService)
+            MaterialInventoryService materialInventoryService,
+            SettlementService settlementService)
         {
             _context = context;
             _walletService = walletService;
             _configuration = configuration;
             _materialInventoryService = materialInventoryService;
+            _settlementService = settlementService;
         }
 
         public async Task<bool> PayWithWalletAsync(int orderId, int userId)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
-            
+
             try
             {
                 var order = await _context.Orders
@@ -45,11 +48,11 @@ namespace EcoFashionBackEnd.Services
                     return false;
 
                 // Khách hàng trả tiền cho đơn hàng
-                await _walletService.CreateTransactionAsync(customerWallet.WalletId, 
+                await _walletService.CreateTransactionAsync(customerWallet.WalletId,
                     TransactionType.Payment, -(double)order.TotalPrice, orderId: orderId);
 
                 // Admin nhận tiền từ đơn hàng (thay vì Deposit để phân biệt với nạp tiền VNPay)
-                await _walletService.CreateTransactionAsync(adminWallet.WalletId, 
+                await _walletService.CreateTransactionAsync(adminWallet.WalletId,
                     TransactionType.PaymentReceived, (double)order.TotalPrice, orderId: orderId);
 
                 order.PaymentStatus = PaymentStatus.Paid;
@@ -62,7 +65,7 @@ namespace EcoFashionBackEnd.Services
                 await DeductInventoryForOrderAsync(orderId);
 
                 await transaction.CommitAsync();
-                
+
                 return true;
             }
             catch
@@ -75,7 +78,7 @@ namespace EcoFashionBackEnd.Services
         public async Task<bool> PayGroupWithWalletAsync(Guid orderGroupId, int userId)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
-            
+
             try
             {
                 var orders = await _context.Orders
@@ -99,13 +102,13 @@ namespace EcoFashionBackEnd.Services
                 // Tạo description chi tiết cho giao dịch nhóm đơn hàng
                 var orderDetails = orders.Select(o => $"orderId: {o.OrderId}, số tiền: {o.TotalPrice:N0}").ToList();
                 var groupDescription = $"Thanh toán cho {orders.Count} đơn hàng có {string.Join("; ", orderDetails)}";
-                
+
                 // Khách hàng trả tiền cho nhóm đơn hàng với description chi tiết
-                await _walletService.CreateTransactionAsync(customerWallet.WalletId, 
+                await _walletService.CreateTransactionAsync(customerWallet.WalletId,
                     TransactionType.Payment, -(double)totalAmount, orderGroupId: orderGroupId, description: groupDescription);
 
                 // Admin nhận tiền từ nhóm đơn hàng (thay vì Deposit)
-                await _walletService.CreateTransactionAsync(adminWallet.WalletId, 
+                await _walletService.CreateTransactionAsync(adminWallet.WalletId,
                     TransactionType.PaymentReceived, (double)totalAmount, orderGroupId: orderGroupId, description: groupDescription);
 
                 // Cập nhật status cho tất cả orders
@@ -125,7 +128,7 @@ namespace EcoFashionBackEnd.Services
                 }
 
                 await transaction.CommitAsync();
-                
+
                 return true;
             }
             catch
@@ -146,7 +149,7 @@ namespace EcoFashionBackEnd.Services
             {
                 // Kiểm tra xem đã trừ kho cho order này chưa (tránh trùng lập)
                 var existingDeduction = await _context.MaterialStockTransactions
-                    .AnyAsync(t => t.ReferenceId == orderId.ToString() && 
+                    .AnyAsync(t => t.ReferenceId == orderId.ToString() &&
                                   t.TransactionType == MaterialTransactionType.CustomerSale &&
                                   (t.ReferenceType == "WalletPayment" || t.ReferenceType == "OrderPayment"));
 
@@ -201,6 +204,66 @@ namespace EcoFashionBackEnd.Services
                     Console.WriteLine($"✅ Successfully deducted {quantity} units of MaterialId {materialId} from WarehouseId {warehouse.WarehouseId} for OrderId {orderId}");
                 }
 
+                // Tiếp tục: Trừ kho sản phẩm của Designer (OrderDetail.Type == product)
+                var productOrderDetails = await _context.OrderDetails
+                    .Include(od => od.Product)
+                        .ThenInclude(p => p.Design)
+                    .Where(od => od.OrderId == orderId && od.Type == OrderDetailType.product && od.ProductId.HasValue)
+                    .ToListAsync();
+
+                if (productOrderDetails.Any())
+                {
+                    foreach (var orderDetail in productOrderDetails)
+                    {
+                        var productId = orderDetail.ProductId!.Value;
+                        var quantity = orderDetail.Quantity;
+                        var designerId = orderDetail.Product!.Design.DesignerId;
+
+                        // Tìm warehouse mặc định của designer cho sản phẩm
+                        var productWarehouse = await _context.Warehouses
+                            .FirstOrDefaultAsync(w => w.DesignerId == designerId && w.IsDefault && w.IsActive && w.WarehouseType == "Product");
+
+                        if (productWarehouse == null)
+                        {
+                            Console.WriteLine($"WARNING: No default product warehouse found for DesignerId {designerId}. Skipping product deduction for ProductId {productId}");
+                            continue;
+                        }
+
+                        var productInventory = await _context.ProductInventories
+                            .FirstOrDefaultAsync(pi => pi.ProductId == productId && pi.WarehouseId == productWarehouse.WarehouseId);
+
+                        if (productInventory == null)
+                        {
+                            Console.WriteLine($"WARNING: No product inventory found for ProductId {productId} in WarehouseId {productWarehouse.WarehouseId}. Skipping.");
+                            continue;
+                        }
+
+                        var beforeQtyInt = productInventory.QuantityAvailable;
+                        var afterQtyInt = beforeQtyInt - quantity;
+                        if (afterQtyInt < 0) afterQtyInt = 0;
+
+                        productInventory.QuantityAvailable = afterQtyInt;
+                        productInventory.LastUpdated = DateTime.UtcNow;
+
+                        await _context.SaveChangesAsync();
+
+                        var productTxn = new ProductInventoryTransaction
+                        {
+                            InventoryId = productInventory.InventoryId,
+                            QuantityChanged = -quantity,
+                            PerformedByUserId = null,
+                            BeforeQty = beforeQtyInt,
+                            AfterQty = afterQtyInt,
+                            TransactionType = "Export",
+                            TransactionDate = DateTime.UtcNow,
+                            Notes = $"Trừ kho sản phẩm cho đơn hàng #{orderId} - Thanh toán ví thành công"
+                        };
+
+                        _context.ProductInventoryTransactions.Add(productTxn);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+
                 return true;
             }
             catch (Exception ex)
@@ -209,5 +272,8 @@ namespace EcoFashionBackEnd.Services
                 throw; // Re-throw để transaction bị rollback
             }
         }
+
     }
+  
 }
+

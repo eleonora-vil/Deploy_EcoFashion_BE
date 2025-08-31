@@ -50,7 +50,7 @@ namespace EcoFashionBackEnd.Data.test
                     BeforeQty = currentQty,
                     AfterQty = currentQty + initialQty,
                     Unit = "mét",
-                    ReferenceType = "PurchaseOrder",
+                    ReferenceType = "SupplierReceipt",
                     ReferenceId = $"PO-{random.Next(1000, 9999)}",
                     Note = $"Nhập kho ban đầu từ nhà cung cấp",
                     CreatedAt = currentDate
@@ -67,8 +67,7 @@ namespace EcoFashionBackEnd.Data.test
                     var transactionTypes = new[]
                     {
                         MaterialTransactionType.SupplierReceipt,
-                        MaterialTransactionType.CustomerSale,
-                        MaterialTransactionType.ProductionUse,
+                        MaterialTransactionType.CustomerSale,                  
                         MaterialTransactionType.ManualAdjustment
                     };
 
@@ -84,7 +83,7 @@ namespace EcoFashionBackEnd.Data.test
                         case MaterialTransactionType.SupplierReceipt:
                             quantityChange = random.Next(50, 200);
                             note = "Nhập thêm hàng từ nhà cung cấp";
-                            referenceType = "PurchaseOrder";
+                            referenceType = "SupplierReceipt";
                             referenceId = $"PO-{random.Next(1000, 9999)}";
                             break;
 
@@ -93,14 +92,7 @@ namespace EcoFashionBackEnd.Data.test
                             note = "Bán hàng cho khách hàng";
                             referenceType = "SalesOrder";
                             referenceId = $"SO-{random.Next(1000, 9999)}";
-                            break;
-
-                        case MaterialTransactionType.ProductionUse:
-                            quantityChange = -Math.Min(currentQty * 0.2m, random.Next(5, 30));
-                            note = "Sử dụng cho sản xuất";
-                            referenceType = "ProductionOrder";
-                            referenceId = $"PROD-{random.Next(1000, 9999)}";
-                            break;
+                            break;                      
 
                         case MaterialTransactionType.ManualAdjustment:
                             quantityChange = random.Next(-20, 20);
@@ -154,7 +146,7 @@ namespace EcoFashionBackEnd.Data.test
                         Unit = "mét",
                         ReferenceType = "Manual",
                         ReferenceId = $"ADJ-FINAL-{random.Next(1000, 9999)}",
-                        Note = "Điều chỉnh cuối để khớp tồn kho hiện tại",
+                        Note = "Điều chỉnh thủ công",
                         CreatedAt = endDate.AddDays(-1)
                     });
                 }
@@ -202,7 +194,7 @@ namespace EcoFashionBackEnd.Data.test
                             BeforeQty = beforeQty,
                             AfterQty = afterQty,
                             Unit = "mét",
-                            ReferenceType = transactionType == MaterialTransactionType.SupplierReceipt ? "PurchaseOrder" : "SalesOrder",
+                            ReferenceType = transactionType == MaterialTransactionType.SupplierReceipt ? "SupplierReceipt" : "SalesOrder",
                             ReferenceId = $"{(transactionType == MaterialTransactionType.SupplierReceipt ? "PO" : "SO")}-{random.Next(1000, 9999)}",
                             Note = transactionType == MaterialTransactionType.SupplierReceipt 
                                 ? "Nhập kho gần đây" 

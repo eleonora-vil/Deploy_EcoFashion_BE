@@ -165,47 +165,47 @@ public class OrderDetailService
 
 
     // Helper method to map OrderDetail to OrderDetailModel
-    private OrderDetailModel MapOrderDetailToModel(OrderDetail od)
-    {
-        string itemName;
-        string providerName;
-        string? imageUrl = null;
+    // private OrderDetailModel MapOrderDetailToModel(OrderDetail od)
+    // {
+    //     string itemName;
+    //     string providerName;
+    //     string? imageUrl = null;
 
-        if (od.Type == OrderDetailType.material && od.Material != null)
-        {
-            itemName = od.Material.Name ?? "Không có tên chất liệu";
-            providerName = od.Supplier?.SupplierName ?? "Nhà cung cấp không tồn tại";
-            imageUrl = od.Material.MaterialImages.FirstOrDefault()?.Image?.ImageUrl;
-        }
-        else if (od.Type == OrderDetailType.product && od.Product != null)
-        {
-            itemName = od.Product.Design?.Name ?? "Không có tên sản phẩm";
-            providerName = od.Product.Design?.DesignerProfile?.DesignerName ?? "Nhà thiết kế không tồn tại";
-            imageUrl = od.Product.Design?.DesignImages?.FirstOrDefault()?.Image?.ImageUrl;
-        }
-        else
-        {
-            itemName = "Không xác định";
-            providerName = "Không xác định";
-        }
+    //     if (od.Type == OrderDetailType.material && od.Material != null)
+    //     {
+    //         itemName = od.Material.Name ?? "Không có tên chất liệu";
+    //         providerName = od.Supplier?.SupplierName ?? "Nhà cung cấp không tồn tại";
+    //         imageUrl = od.Material.MaterialImages.FirstOrDefault()?.Image?.ImageUrl;
+    //     }
+    //     else if (od.Type == OrderDetailType.product && od.Product != null)
+    //     {
+    //         itemName = od.Product.Design?.Name ?? "Không có tên sản phẩm";
+    //         providerName = od.Product.Design?.DesignerProfile?.DesignerName ?? "Nhà thiết kế không tồn tại";
+    //         imageUrl = od.Product.Design?.DesignImages?.FirstOrDefault()?.Image?.ImageUrl;
+    //     }
+    //     else
+    //     {
+    //         itemName = "Không xác định";
+    //         providerName = "Không xác định";
+    //     }
 
-        return new OrderDetailModel
-        {
-            OrderDetailId = od.OrderDetailId,
-            OrderId = od.OrderId,
-            Quantity = od.Quantity,
-            UnitPrice = od.UnitPrice,
-            Type = od.Type.ToString(),
-            Status = od.Status.ToString(),
+    //     return new OrderDetailModel
+    //     {
+    //         OrderDetailId = od.OrderDetailId,
+    //         OrderId = od.OrderId,
+    //         Quantity = od.Quantity,
+    //         UnitPrice = od.UnitPrice,
+    //         Type = od.Type.ToString(),
+    //         Status = od.Status.ToString(),
 
-            MaterialId = od.Type == OrderDetailType.material ? od.MaterialId : 0,
-            ProductId = od.Type == OrderDetailType.product ? od.ProductId : null,
-            SupplierId = od.Type == OrderDetailType.material ? od.SupplierId : null,
+    //         MaterialId = od.Type == OrderDetailType.material ? od.MaterialId : 0,
+    //         ProductId = od.Type == OrderDetailType.product ? od.ProductId : null,
+    //         SupplierId = od.Type == OrderDetailType.material ? od.SupplierId : null,
 
-            ItemName = itemName,
-            ProviderName = providerName,
-            ImageUrl = imageUrl
-        };
-    }
+    //         ItemName = itemName,
+    //         ProviderName = providerName,
+    //         ImageUrl = imageUrl
+    //     };
+    // }
 
 }
