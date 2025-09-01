@@ -2,65 +2,57 @@
 using EcoFashionBackEnd.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace EcoFashionBackEnd.Data.Seeding
+public static class DesignImageSeeder
 {
-    public static class DesignImageSeeder
+    public static async Task SeedAsync(AppDbContext context)
     {
-        public static async Task SeedAsync(AppDbContext context)
+        if (await context.DesignImages.AnyAsync()) return;
+
+        var designs = await context.Designs
+            .OrderBy(d => d.DesignId)
+            .ToListAsync();
+
+        var allImageEntities = new List<Image>();
+        var allDesignImages = new List<DesignImage>();
+
+        // Gộp tất cả pool hình lại
+        var allLinks = SeedImageLinks.Shirt.Links
+            .Concat(SeedImageLinks.Pant.Links)
+            .Concat(SeedImageLinks.Skirt.Links)
+            .ToList();
+
+        // Shuffle
+        var rnd = new Random();
+        var shuffledLinks = allLinks.OrderBy(x => rnd.Next()).ToList();
+
+        int linkIndex = 0;
+
+        foreach (var design in designs)
         {
-            if (await context.DesignImages.AnyAsync()) return;
+            var chosenLinks = new List<string>();
 
-            var designs = await context.Designs
-                .OrderBy(d => d.DesignId)
-                .ToListAsync();
-
-            var random = new Random();
-            var allImageEntities = new List<Image>();
-            var allDesignImages = new List<DesignImage>();
-
-            foreach (var design in designs)
+            for (int i = 0; i < 3 && linkIndex < shuffledLinks.Count; i++, linkIndex++)
             {
-                string[] sourceLinks;
-
-                switch (design.ItemTypeId)
-                {
-                    case 1: // Shirt
-                        sourceLinks = SeedImageLinks.Shirt.Links;
-                        break;
-                    case 2: // Pant
-                        sourceLinks = SeedImageLinks.Pant.Links;
-                        break;
-                    case 3: // Skirt
-                        sourceLinks = SeedImageLinks.Skirt.Links;
-                        break;
-                    default: // fallback
-                        sourceLinks = SeedImageLinks.Shirt.Links;
-                        break;
-                }
-
-                var chosenLinks = sourceLinks
-                    .OrderBy(x => random.Next())
-                    .Take(3)
-                    .ToList();
-
-                foreach (var url in chosenLinks)
-                {
-                    var image = new Image { ImageUrl = url };
-                    allImageEntities.Add(image);
-
-                    allDesignImages.Add(new DesignImage
-                    {
-                        Design = design,
-                        Image = image
-                    });
-                }
+                chosenLinks.Add(shuffledLinks[linkIndex]);
             }
 
-            await context.Images.AddRangeAsync(allImageEntities);
-            await context.SaveChangesAsync();
+            foreach (var url in chosenLinks)
+            {
+                var image = new Image { ImageUrl = url };
+                allImageEntities.Add(image);
 
-            await context.DesignImages.AddRangeAsync(allDesignImages);
-            await context.SaveChangesAsync();
+                allDesignImages.Add(new DesignImage
+                {
+                    Design = design,
+                    Image = image
+                });
+            }
         }
+
+        await context.Images.AddRangeAsync(allImageEntities);
+        await context.SaveChangesAsync();
+
+        await context.DesignImages.AddRangeAsync(allDesignImages);
+        await context.SaveChangesAsync();
     }
 }
