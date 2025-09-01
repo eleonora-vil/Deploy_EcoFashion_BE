@@ -58,7 +58,8 @@ namespace EcoFashionBackEnd.Services
                 .GroupBy(x => x.MaterialId!.Value)
                 .ToDictionary(g => g.Key, g => g.Sum(x => (decimal)x.Quantity));
 
-            await _inventoryService.AddDesignerMaterialsAsync(designer.DesignerId, addMap);
+            await _inventoryService.AddDesignerMaterialsAsync(designer.DesignerId, addMap, orderId);
+            ;
         }
 
         private OrderModel MapOrderToModel(Order order)

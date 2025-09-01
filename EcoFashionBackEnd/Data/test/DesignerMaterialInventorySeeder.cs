@@ -41,7 +41,7 @@ public static class DesignerMaterialInventorySeeder
                 QuantityChanged = quantity,
                 BeforeQty = 0,
                 AfterQty = quantity,
-                TransactionType = "Initial Stock",
+                TransactionType = "Import",
                 Notes = $"Seeded {quantity} units for material {material.Name}",
                 TransactionDate = DateTime.UtcNow
             });

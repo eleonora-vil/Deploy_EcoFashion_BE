@@ -41,7 +41,7 @@ public static class ProductInventorySeeder
                 PerformedByUserId = 2,
                 BeforeQty = 0,
                 AfterQty = quantity,
-                TransactionType = "InitialStock",
+                TransactionType = "Import",
                 Notes = "Seed initial stock"
             });
         }

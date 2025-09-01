@@ -39,6 +39,31 @@ namespace EcoFashionBackEnd.Data.test
 
             await context.Wallets.AddRangeAsync(wallets);
             await context.SaveChangesAsync();
+            double seedAmount = 5_000_000;
+
+            var walletTransactions = new List<WalletTransaction>();
+            foreach (var wallet in wallets)
+            {
+                var tx = new WalletTransaction
+                {
+                    WalletId = wallet.WalletId,
+                    Amount = seedAmount,
+                    BalanceBefore = wallet.Balance,
+                    BalanceAfter = wallet.Balance + seedAmount,
+                    Type = TransactionType.Deposit,
+                    Status = TransactionStatus.Success,
+                    Description = "Yêu cầu nạp 5.000,000 VND",
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                wallet.Balance += seedAmount;
+                wallet.LastUpdatedAt = DateTime.UtcNow;
+
+                walletTransactions.Add(tx);
+            }
+
+            await context.WalletTransactions.AddRangeAsync(walletTransactions);
+            await context.SaveChangesAsync();
         }
     }
 

@@ -209,7 +209,7 @@ namespace EcoFashionBackEnd.Services
         }
 
         //Cộng kho khi mua vật liệu
-        public async Task AddDesignerMaterialsAsync(Guid designerId, Dictionary<int, decimal> addMap)
+        public async Task AddDesignerMaterialsAsync(Guid designerId, Dictionary<int, decimal> addMap, int orderId)
         {
             var userIdString = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -247,7 +247,7 @@ namespace EcoFashionBackEnd.Services
             foreach (var materialId in addMap.Keys)
             {
                 var addQty = addMap[materialId];
-               
+
                 if (addQty <= 0)
                 {
                     continue;
@@ -282,7 +282,7 @@ namespace EcoFashionBackEnd.Services
                         PerformedByUserId = userId,
                         TransactionType = "Import",
                         TransactionDate = DateTime.Now,
-                        Notes = "Nhập kho vật liệu cho Designer"
+                        Notes = $"Nhập kho vật liệu cho Nhà Thiết Kế từ đơn hàng #{orderId}"
                     };
 
                     await _materialInventoryTransactionRepository.AddAsync(transactionNew);
@@ -309,7 +309,7 @@ namespace EcoFashionBackEnd.Services
                         PerformedByUserId = userId,
                         TransactionType = "Import",
                         TransactionDate = DateTime.Now,
-                        Notes = "Nhập kho vật liệu cho Designer"
+                        Notes = $"Nhập kho vật liệu cho Nhà Thiết Kế từ đơn hàng #{orderId}"
                     };
 
                     await _materialInventoryTransactionRepository.AddAsync(transaction);
@@ -318,5 +318,6 @@ namespace EcoFashionBackEnd.Services
 
             await _materialInventoryTransactionRepository.Commit();
         }
+
     }
 }
