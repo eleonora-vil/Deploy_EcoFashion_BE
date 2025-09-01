@@ -72,8 +72,7 @@ public class SupplierController : ControllerBase
     /// <summary>
     /// Admin: Get all suppliers (full details)
     /// </summary>
-    [HttpGet]
-    [Authorize(Roles = "admin")]
+    [HttpGet]  
     public async Task<IActionResult> GetAllSuppliers()
     {
         var result = await _supplierService.GetAllSuppliers();
@@ -161,7 +160,6 @@ public class SupplierController : ControllerBase
     /// Admin: Filter suppliers
     /// </summary>
     [HttpGet("Filter")]
-    [Authorize(Roles = "admin")]
     public async Task<IActionResult> FilterSuppliers(
         [FromQuery] string? supplierName,
         [FromQuery] string? email,
@@ -179,7 +177,6 @@ public class SupplierController : ControllerBase
     /// Admin: Search suppliers
     /// </summary>
     [HttpGet("Search")]
-    [Authorize(Roles = "admin")]
     public async Task<IActionResult> SearchSuppliers([FromQuery] string? keyword)
     {
         var searchResults = await _supplierService.SearchSuppliers(keyword);

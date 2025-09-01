@@ -50,13 +50,21 @@ namespace EcoFashionBackEnd.Data.test
     {
         new Warehouse
         {
+            Name = "Kho Designer - Nguyên Liệu",
             DesignerId = designer.DesignerId,
-            WarehouseType = "Material"
+            WarehouseType = "Material",
+            IsDefault = true,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow.AddDays(-20)
         },
         new Warehouse
         {
+            Name = "Kho Designer - Sản Phẩm",
             DesignerId = designer.DesignerId,
-            WarehouseType = "Product"
+            WarehouseType = "Product",
+            IsDefault = true,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow.AddDays(-20)
         }
     };
 

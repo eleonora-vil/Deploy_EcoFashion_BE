@@ -75,7 +75,6 @@ public class DesignerController : ControllerBase
     /// Admin: Get all designers (full details)
     /// </summary>
     [HttpGet]
-    [Authorize(Roles = "admin")]
     public async Task<IActionResult> GetAllDesigners()
     {
         var result = await _designerService.GetAllDesigners();
@@ -100,7 +99,6 @@ public class DesignerController : ControllerBase
     /// Admin: Get designer full details
     /// </summary>
     [HttpGet("{id}")]
-    [Authorize(Roles = "admin")]
     public async Task<IActionResult> GetDesignerById(Guid id)
     {
         var designer = await _designerService.GetDesignerById(id);
@@ -163,7 +161,6 @@ public class DesignerController : ControllerBase
     /// Admin: Filter designers
     /// </summary>
     [HttpGet("Filter")]
-    [Authorize(Roles = "admin")]
     public async Task<IActionResult> FilterDesigners(
         [FromQuery] string? designerName,
         [FromQuery] string? email,
@@ -181,7 +178,6 @@ public class DesignerController : ControllerBase
     /// Admin: Search designers
     /// </summary>
     [HttpGet("Search")]
-    [Authorize(Roles = "admin")]
     public async Task<IActionResult> SearchDesigners([FromQuery] string? keyword)
     {
         var searchResults = await _designerService.SearchDesigners(keyword);

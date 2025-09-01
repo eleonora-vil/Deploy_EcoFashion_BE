@@ -2,80 +2,51 @@
 using EcoFashionBackEnd.Helpers;
 using Microsoft.EntityFrameworkCore;
 
-namespace EcoFashionBackEnd.Data.test
+public static class ProductSeeder
 {
-    public static class ProductSeeder
+    public static async Task SeedAsync(AppDbContext context)
     {
-        public static async Task SeedAsync(AppDbContext context)
+        if (await context.Products.AnyAsync()) return;
+
+        // Lấy tất cả 19 design đã seed
+        var designs = await context.Designs
+            .Include(d => d.ItemTypes)
+            .OrderBy(d => d.DesignId)
+            .ToListAsync();
+
+        var sizes = await context.Sizes.ToListAsync();
+        var variants = await context.DesignsVarients.ToListAsync();
+
+        var products = new List<Product>();
+        var random = new Random();
+
+        foreach (var design in designs)
         {
-            if (await context.Products.AnyAsync()) return;
-
-            // Giả sử đã có designId, sizeId, variantId trong db
-            // Lấy mẫu data từ db cho reference
-            var designs = await context.Designs.Take(12).ToListAsync();
-            var sizes = await context.Sizes.ToListAsync();
-            var variants = await context.DesignsVarients.ToListAsync();
-            var warehouses = await context.Warehouses.Where(w => w.WarehouseType == "Product").ToListAsync();
-
-            var products = new List<Product>();
-            var productInventories = new List<ProductInventory>();
-            var random = new Random();
-
-            int skuCounter = 1;
-
-            foreach (var design in designs)
+            foreach (var size in sizes)
             {
-                foreach (var size in sizes)
+                var variant = variants.FirstOrDefault(v => v.DesignId == design.DesignId && v.SizeId == size.SizeId);
+
+                var colors = new[] { "#FF0000", "#000000", "#FFFFFF" };
+
+                foreach (var color in colors)
                 {
-                    // Optional: tìm variant tương ứng theo design và size
-                    var variant = variants.FirstOrDefault(v => v.DesignId == design.DesignId && v.SizeId == size.SizeId);
+                    var basicColorName = ColorExchange.ClassifyColorAdvanced(color);
+                    var sku = $"D{design.DesignId}-S{size.SizeId}-C{basicColorName.Replace(" ", "").ToUpper()}";
+                    var price = (design.SalePrice ?? 500000m) + random.Next(0, 200000);
 
-                    // Màu sắc mẫu
-                    var colors = new[] { "#FF0000", "#000000", "#FFFFFF" };
-
-                    foreach (var color in colors)
+                    products.Add(new Product
                     {
-                        var basicColorName = ColorExchange.ClassifyColorAdvanced(color);
-                        var sku = $"D{design.DesignId}-S{size.SizeId}-C{basicColorName.Replace(" ", "").ToUpper()}";
-                        var price = design.SalePrice ?? 500000m + random.Next(0, 200000);
-
-                        var product = new Product
-                        {
-                            DesignId = design.DesignId,
-                            SizeId = size.SizeId,
-                            ColorCode = color,
-                            SKU = sku,
-                            Price = price
-                        };
-
-                        products.Add(product);
-                    }
+                        DesignId = design.DesignId,
+                        SizeId = size.SizeId,
+                        ColorCode = color,
+                        SKU = sku,
+                        Price = price
+                    });
                 }
             }
-
-            await context.Products.AddRangeAsync(products);
-            await context.SaveChangesAsync();
-
-            // Sau khi lưu products, tạo ProductInventory cho mỗi product với kho Product mặc định
-            var defaultProductWarehouse = warehouses.FirstOrDefault();
-            if (defaultProductWarehouse == null) throw new Exception("Không tìm thấy kho Product mặc định.");
-
-            foreach (var product in products)
-            {
-                var quantity = random.Next(5, 20); // số lượng tồn kho random
-
-                productInventories.Add(new ProductInventory
-                {
-                    ProductId = product.ProductId,
-                    WarehouseId = defaultProductWarehouse.WarehouseId,
-                    QuantityAvailable = quantity,
-                    LastUpdated = DateTime.UtcNow
-                });
-            }
-
-            await context.ProductInventories.AddRangeAsync(productInventories);
-            await context.SaveChangesAsync();
         }
-    }
 
+        await context.Products.AddRangeAsync(products);
+        await context.SaveChangesAsync();
+    }
 }

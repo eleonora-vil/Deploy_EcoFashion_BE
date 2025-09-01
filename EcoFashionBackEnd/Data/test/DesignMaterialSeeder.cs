@@ -1,7 +1,7 @@
 ﻿using EcoFashionBackEnd.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace EcoFashionBackEnd.Data.test
+namespace EcoFashionBackEnd.Data.Seeding
 {
     public static class DesignMaterialSeeder
     {
@@ -12,46 +12,36 @@ namespace EcoFashionBackEnd.Data.test
             var designs = await context.Designs.ToListAsync();
             var materials = await context.Materials.ToListAsync();
 
-            var designMaterials = new List<DesignsMaterial>();
+            if (!designs.Any() || !materials.Any()) return;
 
-            int materialIndex = 0;
+            var designMaterials = new List<DesignsMaterial>();
+            var random = new Random();
 
             foreach (var design in designs)
             {
-                var numMaterials = Random.Shared.Next(2, 4);
-                var usedMaterials = materials.Skip(materialIndex).Take(numMaterials).ToList();
+                // mỗi design có 2–3 material
+                var numMaterials = random.Next(2, 4);
+                var usedMaterials = materials
+                    .OrderBy(x => random.Next())
+                    .Take(numMaterials)
+                    .ToList();
 
-                float totalPercentage = 100f;
-                float remaining = totalPercentage;
-
-                foreach (var material in usedMaterials)
+                // phân bổ % sử dụng
+                float remaining = 100f;
+                for (int i = 0; i < usedMaterials.Count; i++)
                 {
-                    float percent;
-                    if (material == usedMaterials.Last())
-                    {
-                        percent = remaining; 
-                    }
-                    else
-                    {
-                        percent = (float)Math.Round(Random.Shared.NextDouble() * (remaining / 2), 1, MidpointRounding.AwayFromZero);
-                        remaining -= percent;
-                    }
 
                     designMaterials.Add(new DesignsMaterial
                     {
                         DesignId = design.DesignId,
-                        MaterialId = material.MaterialId,
-                        MeterUsed = Random.Shared.Next(1, 10)
+                        MaterialId = usedMaterials[i].MaterialId,
+                        MeterUsed = random.Next(1, 10)
                     });
                 }
-
-                materialIndex = (materialIndex + 1) % materials.Count; 
             }
 
             await context.DesignsMaterials.AddRangeAsync(designMaterials);
             await context.SaveChangesAsync();
         }
     }
-
-
 }

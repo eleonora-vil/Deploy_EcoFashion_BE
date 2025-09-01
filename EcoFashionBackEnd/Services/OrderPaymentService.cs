@@ -156,7 +156,7 @@ namespace EcoFashionBackEnd.Services
                 if (existingDeduction)
                 {
                     Console.WriteLine($"⚠️ Inventory already deducted for OrderId {orderId}. Skipping duplicate deduction.");
-                    return true;
+                    //return true;
                 }
 
                 // Lấy tất cả order details có MaterialId (loại material, không phải design)
@@ -169,7 +169,7 @@ namespace EcoFashionBackEnd.Services
                 if (!materialOrderDetails.Any())
                 {
                     Console.WriteLine($"No material order details found for OrderId {orderId}. Skipping inventory deduction.");
-                    return true; // Không có material nào cần trừ
+                    //return true; // Không có material nào cần trừ
                 }
 
                 foreach (var orderDetail in materialOrderDetails)
@@ -221,7 +221,7 @@ namespace EcoFashionBackEnd.Services
 
                         // Tìm warehouse mặc định của designer cho sản phẩm
                         var productWarehouse = await _context.Warehouses
-                            .FirstOrDefaultAsync(w => w.DesignerId == designerId && w.IsDefault && w.IsActive && w.WarehouseType == "Product");
+                            .FirstOrDefaultAsync(w => w.DesignerId == designerId  && w.IsActive && w.WarehouseType == "Product");
 
                         if (productWarehouse == null)
                         {
@@ -255,7 +255,7 @@ namespace EcoFashionBackEnd.Services
                             BeforeQty = beforeQtyInt,
                             AfterQty = afterQtyInt,
                             TransactionType = "Export",
-                            TransactionDate = DateTime.UtcNow,
+                            TransactionDate = DateTime.Now,
                             Notes = $"Trừ kho sản phẩm cho đơn hàng #{orderId} - Thanh toán ví thành công"
                         };
 
