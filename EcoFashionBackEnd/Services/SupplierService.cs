@@ -60,7 +60,7 @@ namespace EcoFashionBackEnd.Services
         /// </summary>
         public async Task<SupplierPublicModel?> GetSupplierPublicProfile(Guid id)
         {
-            var supplier = await _supplierRepository.GetAll().Include(s => s.User).FirstOrDefaultAsync(s => s.SupplierId == id && s.Status == "Active");
+            var supplier = await _supplierRepository.GetAll().Include(s => s.User).FirstOrDefaultAsync(s => s.SupplierId == id && s.Status.ToLower() == "active");
 
             if (supplier == null) return null;
 
@@ -129,7 +129,7 @@ namespace EcoFashionBackEnd.Services
         {
             var suppliers = await _supplierRepository.GetAll()
                 .Include(s => s.User)
-                .Where(s => s.Status == "Active")
+                .Where(s => s.Status.ToLower() == "active")
                 .OrderByDescending(s => s.Rating ?? 0)
                 .ThenByDescending(s => s.ReviewCount ?? 0)
                 .ThenByDescending(s => s.CreatedAt)
@@ -212,7 +212,7 @@ namespace EcoFashionBackEnd.Services
                 IdentificationPictureBack = request.IdentificationPictureBack,
                 Certificates = request.Certificates,
                 CreatedAt = DateTime.UtcNow,
-                Status = "Active"
+                Status = "active"
             };
 
             await _supplierRepository.AddAsync(supplier);
@@ -271,7 +271,7 @@ namespace EcoFashionBackEnd.Services
                 return false;
             }
 
-            existingSupplier.Status = "Inactive";
+            existingSupplier.Status = "inactive";
             existingSupplier.UpdatedAt = DateTime.UtcNow;
             _supplierRepository.Update(existingSupplier);
             await _dbContext.SaveChangesAsync();

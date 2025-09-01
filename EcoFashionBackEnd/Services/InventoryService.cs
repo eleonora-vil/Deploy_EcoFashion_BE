@@ -281,7 +281,7 @@ namespace EcoFashionBackEnd.Services
                         AfterQty = addQty,
                         PerformedByUserId = userId,
                         TransactionType = "Import",
-                        TransactionDate = DateTime.UtcNow,
+                        TransactionDate = DateTime.Now,
                         Notes = "Nhập kho vật liệu cho Designer"
                     };
 
@@ -308,7 +308,7 @@ namespace EcoFashionBackEnd.Services
                         AfterQty = afterQty,
                         PerformedByUserId = userId,
                         TransactionType = "Import",
-                        TransactionDate = DateTime.UtcNow,
+                        TransactionDate = DateTime.Now,
                         Notes = "Nhập kho vật liệu cho Designer"
                     };
 

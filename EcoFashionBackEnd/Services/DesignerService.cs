@@ -71,7 +71,7 @@ namespace EcoFashionBackEnd.Services
         /// </summary>
         public async Task<DesignerPublicModel?> GetDesignerPublicProfile(Guid id)
         {
-            var designer = await _designerRepository.GetAll().Include(d => d.User).FirstOrDefaultAsync(d => d.DesignerId == id && d.Status == "Active");
+            var designer = await _designerRepository.GetAll().Include(d => d.User).FirstOrDefaultAsync(d => d.DesignerId == id && d.Status.ToLower() == "active");
 
             if (designer == null) return null;
 
@@ -136,7 +136,7 @@ namespace EcoFashionBackEnd.Services
         {
             var designers = await _designerRepository.GetAll()
                 .Include(d => d.User)
-                .Where(d => d.Status == "Active")
+                .Where(d => d.Status.ToLower() == "Active")
                 .OrderByDescending(d => d.Rating ?? 0)
                 .ThenByDescending(d => d.ReviewCount ?? 0)
                 .ThenByDescending(d => d.CreatedAt)
@@ -197,7 +197,7 @@ namespace EcoFashionBackEnd.Services
                 //IdentificationPictureBack = request.IdentificationPictureBack,
                 Certificates = request.Certificates,
                 CreatedAt = DateTime.UtcNow,
-                Status = "Active"
+                Status = "active"
             };
 
             await _designerRepository.AddAsync(designer);
@@ -258,7 +258,7 @@ namespace EcoFashionBackEnd.Services
                 return false;
             }
 
-            existingDesigner.Status = "Inactive";
+            existingDesigner.Status = "inactive";
             existingDesigner.UpdatedAt = DateTime.UtcNow;
             _designerRepository.Update(existingDesigner);
             await _dbContext.SaveChangesAsync();

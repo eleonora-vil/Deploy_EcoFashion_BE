@@ -382,8 +382,9 @@ namespace EcoFashionBackEnd.Services
 
             var deposited = monthlyTransactions.Where(t => t.Type == TransactionType.Deposit || t.Type == TransactionType.Refund)
                                               .Sum(t => t.Amount);
-            var spent = monthlyTransactions.Where(t => t.Type == TransactionType.Payment || t.Type == TransactionType.Withdrawal)
-                                          .Sum(t => t.Amount);
+            var spent = monthlyTransactions
+                 .Where(t => t.Type == TransactionType.Payment || t.Type == TransactionType.Withdrawal)
+                 .Sum(t => t.Type == TransactionType.Withdrawal ? -t.Amount : t.Amount);
 
             return new
             {
@@ -402,7 +403,7 @@ namespace EcoFashionBackEnd.Services
                 {
                     deposited = deposited,
                     spent = spent,
-                    net = deposited - spent
+                    net = deposited + spent
                 }
             };
         }
