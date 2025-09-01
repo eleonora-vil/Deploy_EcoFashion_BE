@@ -159,7 +159,8 @@ namespace EcoFashionBackEnd.Controllers
                 EmailToId = "vinhthitheokaka@gmail.com",
                 EmailToName = "Tester",
                 EmailSubject = "Railway Test",
-                EmailBody = "This is a test from Railway backend"
+                EmailBody = "<h2>This is a test from Railway backend</h2>"
+
             };
 
             var result = await _emailService.SendEmailAsync(mailData);

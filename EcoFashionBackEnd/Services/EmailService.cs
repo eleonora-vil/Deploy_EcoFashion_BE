@@ -1,56 +1,45 @@
-using System.Net;
-using System.Net.Mail;
-using Microsoft.Extensions.Options;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
 using EcoFashionBackEnd.Helpers;
 using EcoFashionBackEnd.Services;
+using Microsoft.Extensions.Configuration;
+
 
 public class EmailService : IEmailService
 {
-    private readonly MailSettings _mailSettings;
+    private readonly HttpClient _httpClient;
+    private readonly string _apiKey;
 
-    public EmailService(IOptions<MailSettings> mailSettings)
+    public EmailService(IConfiguration config)
     {
-        _mailSettings = mailSettings.Value;
+        _httpClient = new HttpClient();
+        _apiKey = config["RESEND_API_KEY"]; // ??c t? ENV Railway
+        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_apiKey}");
     }
 
     public async Task<bool> SendEmailAsync(MailData mailData)
     {
         try
         {
-            using var smtpClient = new SmtpClient(_mailSettings.Server)
+            var payload = new
             {
-                Port = int.Parse(_mailSettings.Port),
-                DeliveryMethod = SmtpDeliveryMethod.Network,
-                UseDefaultCredentials = false,
-                Credentials = new NetworkCredential(_mailSettings.UserName, _mailSettings.Password),
-                EnableSsl = true,
-                Timeout = 10000
+                from = "onboarding@resend.dev", // test ban ??u
+                to = new[] { mailData.EmailToId },
+                subject = mailData.EmailSubject,
+                html = mailData.EmailBody // support HTML
             };
 
-            var mailMessage = new MailMessage
-            {
-                From = new MailAddress(_mailSettings.SenderEmail, _mailSettings.SenderName),
-                Subject = mailData.EmailSubject,
-                Body = mailData.EmailBody,
-                IsBodyHtml = false
-            };
+            var response = await _httpClient.PostAsJsonAsync("https://api.resend.com/emails", payload);
+            var body = await response.Content.ReadAsStringAsync();
 
-            mailMessage.To.Add(new MailAddress(mailData.EmailToId, mailData.EmailToName));
+            Console.WriteLine($"[Resend] Status: {response.StatusCode}, Body: {body}");
 
-            await smtpClient.SendMailAsync(mailMessage);
-            Console.WriteLine("[EmailService] Email sent OK to " + mailData.EmailToId);
-            return true;
-        }
-        catch (SmtpException smtpEx)
-        {
-            Console.WriteLine($"[EmailService] SMTP error: {smtpEx.StatusCode} - {smtpEx.Message}");
-            Console.WriteLine(smtpEx.ToString());
-            return false;
+            return response.IsSuccessStatusCode;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[EmailService] General error: {ex.GetType()} - {ex.Message}");
-            Console.WriteLine(ex.ToString());
+            Console.WriteLine($"[EmailService] Error: {ex.Message}");
             return false;
         }
     }
