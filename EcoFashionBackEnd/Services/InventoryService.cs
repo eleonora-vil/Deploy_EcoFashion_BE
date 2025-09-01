@@ -8,6 +8,7 @@ namespace EcoFashionBackEnd.Services
     public class InventoryService
     {
         private readonly IRepository<Product, int> _productRepository;
+        private readonly IRepository<Material, int> _materialRepository;
         private readonly IRepository<ProductInventory, int> _productInventoryRepository;
         private readonly IRepository<DesignerMaterialInventory, int> _designerMaterialInventory;
         private readonly IRepository<MaterialInventoryTransaction, int> _materialInventoryTransactionRepository;
@@ -18,6 +19,7 @@ namespace EcoFashionBackEnd.Services
 
         public InventoryService(
           IRepository<Product, int> productRepository,
+          IRepository<Material, int> materialRepository,
           IRepository<ProductInventory, int> productInventoryRepository,
           IRepository<DesignerMaterialInventory, int> designerMaterialInventory,
           IRepository<MaterialInventoryTransaction, int> materialInventoryTransactionRepository,
@@ -28,6 +30,7 @@ namespace EcoFashionBackEnd.Services
           )
         {
             _productRepository = productRepository;
+            _materialRepository = materialRepository;
             _productInventoryRepository = productInventoryRepository;
             _designerMaterialInventory = designerMaterialInventory;
             _materialInventoryTransactionRepository = materialInventoryTransactionRepository;
@@ -244,7 +247,7 @@ namespace EcoFashionBackEnd.Services
             foreach (var materialId in addMap.Keys)
             {
                 var addQty = addMap[materialId];
-
+               
                 if (addQty <= 0)
                 {
                     continue;
@@ -252,13 +255,19 @@ namespace EcoFashionBackEnd.Services
 
                 if (!inventories.TryGetValue(materialId, out var inventory))
                 {
+                    var price = await _materialRepository
+                         .GetAll()
+                         .Where(m => m.MaterialId == materialId)
+                         .Select(m => m.PricePerUnit)
+                         .FirstOrDefaultAsync();
                     inventory = new DesignerMaterialInventory
                     {
                         WarehouseId = warehouse.WarehouseId,
                         MaterialId = materialId,
                         Quantity = addQty,
                         LastBuyDate = DateTime.UtcNow,
-                        Status = addQty > 0 ? "In Stock" : "Out of Stock"
+                        Status = addQty > 0 ? "In Stock" : "Out of Stock",
+                        Cost = addQty * price,
                     };
 
                     await _designerMaterialInventory.AddAsync(inventory);
@@ -286,6 +295,7 @@ namespace EcoFashionBackEnd.Services
                     inventory.Quantity = afterQty;
                     inventory.LastBuyDate = DateTime.UtcNow;
                     inventory.Status = afterQty > 0 ? "In Stock" : "Out of Stock";
+                    inventory.Cost = afterQty * inventory.Material.PricePerUnit;
 
                     _designerMaterialInventory.Update(inventory);
                     await _designerMaterialInventory.Commit();
