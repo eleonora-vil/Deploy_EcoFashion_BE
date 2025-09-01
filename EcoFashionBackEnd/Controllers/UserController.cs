@@ -2,6 +2,7 @@
 using EcoFashionBackEnd.Dtos.Auth;
 using EcoFashionBackEnd.Dtos.User;
 using EcoFashionBackEnd.Exceptions;
+using EcoFashionBackEnd.Helpers;
 using EcoFashionBackEnd.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,10 +15,12 @@ namespace EcoFashionBackEnd.Controllers
     public class UserController : ControllerBase
     {
         private readonly UserService _userService;
+        private readonly IEmailService _emailService;
 
-        public UserController(UserService userService)
+        public UserController(UserService userService, IEmailService emailService)
         {
             _userService = userService;
+            _emailService = emailService;
         }
 
         [HttpPost("login")]
@@ -148,5 +151,20 @@ namespace EcoFashionBackEnd.Controllers
                 return StatusCode(500, ApiResult<object>.Fail(ex.Message));
             }
         }
+        [HttpGet("test-email")]
+        public async Task<IActionResult> TestEmail()
+        {
+            var mailData = new MailData()
+            {
+                EmailToId = "vinhthitheokaka@gmail.com",
+                EmailToName = "Tester",
+                EmailSubject = "Railway Test",
+                EmailBody = "This is a test from Railway backend"
+            };
+
+            var result = await _emailService.SendEmailAsync(mailData);
+            return Ok(new { success = result });
+        }
+
     }
 }
