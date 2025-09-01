@@ -100,13 +100,17 @@ namespace EcoFashionBackEnd.Services
         // Đăng ký người dùng mới
         public async Task<SignupResponse> SignupAsync(SignupRequest req)
         {
+            // 1. Check email tồn tại
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == req.Email);
             if (user is not null)
             {
                 throw new BadRequestException("Email đã được sử dụng.");
             }
 
+            // 2. Sinh OTP
             var otp = new Random().Next(100000, 999999);
+
+            // 3. Tạo user mới
             var newUser = new User
             {
                 Email = req.Email,
@@ -125,6 +129,7 @@ namespace EcoFashionBackEnd.Services
             await _userRepository.AddAsync(newUser);
             await _dbContext.SaveChangesAsync();
 
+            // 4. Tạo wallet cho user
             var wallet = new Wallet
             {
                 UserId = newUser.UserId,
@@ -136,20 +141,26 @@ namespace EcoFashionBackEnd.Services
 
             await _dbContext.Wallets.AddAsync(wallet);
             var res = await _dbContext.SaveChangesAsync();
-
-
-
             if (res <= 0)
             {
                 throw new InvalidOperationException("Không thể tạo tài khoản. Vui lòng thử lại.");
             }
 
-            var mailData = new MailData()
+            // 5. Gửi OTP email qua Resend
+            var mailData = new MailData
             {
                 EmailToId = newUser.Email ?? "",
                 EmailToName = newUser.FullName ?? "",
-                EmailBody = $"Your OTP code is: {otp}",
-                EmailSubject = "Xác thực tài khoản EcoFashion"
+                EmailSubject = "Xác thực tài khoản EcoFashion",
+                EmailBody = $@"
+                                <h2>Xin chào {newUser.FullName},</h2>
+                                <p>Cảm ơn bạn đã đăng ký tài khoản EcoFashion.</p>
+                                <p>Mã OTP để xác thực tài khoản của bạn là:</p>
+                                <h3 style='color: #4CAF50;'>{otp}</h3>
+                                <p>Mã sẽ hết hạn sau 10 phút.</p>
+                                <br/>
+                                <p>Trân trọng,<br/>Đội ngũ EcoFashion</p>
+                            "
             };
 
             var emailResult = await _emailService.SendEmailAsync(mailData);
@@ -158,6 +169,7 @@ namespace EcoFashionBackEnd.Services
                 throw new BadRequestException("Không thể gửi email xác thực. Vui lòng thử lại.");
             }
 
+            // 6. Trả response
             return new SignupResponse
             {
                 Success = true,
@@ -165,6 +177,7 @@ namespace EcoFashionBackEnd.Services
                 Email = newUser.Email ?? ""
             };
         }
+
 
         public async Task<bool> VerifyOTPAsync(VerifyOTPRequest request)
         {

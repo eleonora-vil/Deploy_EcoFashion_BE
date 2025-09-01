@@ -1,4 +1,4 @@
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using EcoFashionBackEnd.Helpers;
@@ -14,7 +14,9 @@ public class EmailService : IEmailService
     public EmailService(IConfiguration config)
     {
         _httpClient = new HttpClient();
-        _apiKey = config["RESEND_API_KEY"]; // ??c t? ENV Railway
+        _apiKey = config["RESEND_API_KEY"]; // đọc từ ENV Railway
+        if (string.IsNullOrWhiteSpace(_apiKey))
+            throw new InvalidOperationException("RESEND_API_KEY không được null.");
         _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_apiKey}");
     }
 
@@ -24,7 +26,7 @@ public class EmailService : IEmailService
         {
             var payload = new
             {
-                from = "onboarding@resend.dev", // test ban ??u
+                from = "onboarding@resend.dev", // test ban đầu
                 to = new[] { mailData.EmailToId },
                 subject = mailData.EmailSubject,
                 html = mailData.EmailBody // support HTML
