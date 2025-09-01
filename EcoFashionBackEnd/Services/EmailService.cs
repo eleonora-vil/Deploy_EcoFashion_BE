@@ -2,48 +2,56 @@ using System.Net;
 using System.Net.Mail;
 using Microsoft.Extensions.Options;
 using EcoFashionBackEnd.Helpers;
+using EcoFashionBackEnd.Services;
 
-namespace EcoFashionBackEnd.Services
+public class EmailService : IEmailService
 {
-    public class EmailService : IEmailService
+    private readonly MailSettings _mailSettings;
+
+    public EmailService(IOptions<MailSettings> mailSettings)
     {
-        private readonly MailSettings _mailSettings;
+        _mailSettings = mailSettings.Value;
+    }
 
-        public EmailService(IOptions<MailSettings> mailSettings)
+    public async Task<bool> SendEmailAsync(MailData mailData)
+    {
+        try
         {
-            _mailSettings = mailSettings.Value;
+            using var smtpClient = new SmtpClient(_mailSettings.Server)
+            {
+                Port = int.Parse(_mailSettings.Port),
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                UseDefaultCredentials = false,
+                Credentials = new NetworkCredential(_mailSettings.UserName, _mailSettings.Password),
+                EnableSsl = true,
+                Timeout = 10000
+            };
+
+            var mailMessage = new MailMessage
+            {
+                From = new MailAddress(_mailSettings.SenderEmail, _mailSettings.SenderName),
+                Subject = mailData.EmailSubject,
+                Body = mailData.EmailBody,
+                IsBodyHtml = false
+            };
+
+            mailMessage.To.Add(new MailAddress(mailData.EmailToId, mailData.EmailToName));
+
+            await smtpClient.SendMailAsync(mailMessage);
+            Console.WriteLine("[EmailService] Email sent OK to " + mailData.EmailToId);
+            return true;
         }
-
-        public async Task<bool> SendEmailAsync(MailData mailData)
+        catch (SmtpException smtpEx)
         {
-            try
-            {
-                using var smtpClient = new SmtpClient(_mailSettings.Server)
-                {
-                    Port = int.Parse(_mailSettings.Port),
-                    Credentials = new NetworkCredential(_mailSettings.UserName, _mailSettings.Password),
-                    EnableSsl = true
-                };
-
-                var mailMessage = new MailMessage
-                {
-                    From = new MailAddress(_mailSettings.SenderEmail, _mailSettings.SenderName),
-                    Subject = mailData.EmailSubject,
-                    Body = mailData.EmailBody,
-                    IsBodyHtml = false
-                };
-
-                mailMessage.To.Add(new MailAddress(mailData.EmailToId, mailData.EmailToName));
-
-                await smtpClient.SendMailAsync(mailMessage);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                // Log the exception here if you have a logging service
-                Console.WriteLine($"Error sending email: {ex.Message}");
-                return false;
-            }
+            Console.WriteLine($"[EmailService] SMTP error: {smtpEx.StatusCode} - {smtpEx.Message}");
+            Console.WriteLine(smtpEx.ToString());
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[EmailService] General error: {ex.GetType()} - {ex.Message}");
+            Console.WriteLine(ex.ToString());
+            return false;
         }
     }
 }
