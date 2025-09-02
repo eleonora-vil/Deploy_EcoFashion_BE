@@ -34,7 +34,7 @@ namespace EcoFashionBackEnd.Controllers
 
         [HttpGet("transactions")]
         [Authorize(Roles = "admin,supplier")]
-        public async Task<IActionResult> GetTransactions([FromQuery] int? materialId, [FromQuery] int? warehouseId, [FromQuery] string? type, [FromQuery] DateTime? from, [FromQuery] DateTime? to)
+        public async Task<IActionResult> GetTransactions([FromQuery] int? materialId, [FromQuery] int? warehouseId, [FromQuery] string? type, [FromQuery] DateTime? from, [FromQuery] DateTime? to, [FromQuery] bool? supplierOnly)
         {
             Guid? supplierId = null;
             if (User.IsInRole("supplier"))
@@ -42,7 +42,7 @@ namespace EcoFashionBackEnd.Controllers
                 var sid = User.FindFirst("SupplierId")?.Value;
                 if (Guid.TryParse(sid, out var g)) supplierId = g;
             }
-            var result = await _inventoryService.GetTransactionsAsync(supplierId, materialId, warehouseId, type, from, to);
+            var result = await _inventoryService.GetTransactionsAsync(supplierId, materialId, warehouseId, type, from, to, supplierOnly);
             return Ok(result);
         }
 

@@ -166,21 +166,7 @@ namespace EcoFashionBackEnd.Services
             var emailResult = await _emailService.SendEmailAsync(mailData);
             if (!emailResult)
             {
-                // fallback
-                var fallbackMail = new MailData
-                {
-                    EmailToId = "vinhntse173702@fpt.edu.vn",
-                    EmailToName = "EcoFashion Dev",
-                    EmailSubject = mailData.EmailSubject,
-                    EmailBody = mailData.EmailBody
-                };
-
-                var fallbackResult = await _emailService.SendEmailAsync(fallbackMail);
-
-                if (!fallbackResult)
-                {
-                    throw new BadRequestException("Không thể gửi email xác thực đến cả user và fallback.");
-                }
+                throw new BadRequestException("Không thể gửi email xác thực. Vui lòng thử lại.");
             }
 
             // 6. Trả response
@@ -293,6 +279,28 @@ namespace EcoFashionBackEnd.Services
                 Status = user.Status.ToString(),
                 CreatedAt = user.CreatedAt
             };
+        }
+
+        // Admin: Get all users with roles and basic info
+        public async Task<List<UserInfo>> GetAllUsersAsync()
+        {
+            var users = await _dbContext.Users
+                .Include(u => u.UserRole)
+                .OrderByDescending(u => u.CreatedAt)
+                .ToListAsync();
+
+            return users.Select(u => new UserInfo
+            {
+                UserId = u.UserId,
+                FullName = u.FullName ?? string.Empty,
+                Email = u.Email ?? string.Empty,
+                Phone = u.Phone,
+                Username = u.Username,
+                Role = u.UserRole != null ? u.UserRole.RoleName : string.Empty,
+                RoleId = u.RoleId,
+                Status = u.Status.ToString(),
+                CreatedAt = u.CreatedAt
+            }).ToList();
         }
     }
 }

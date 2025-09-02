@@ -26,7 +26,8 @@ namespace EcoFashionBackEnd.Common.Payloads.Requests
         [Range(0, double.MaxValue)]
         public decimal PricePerUnit { get; set; }
 
-        [Url]
+        // Allow empty or null; FE may send "" when no documents provided
+        [StringLength(1000)]
         public string? DocumentationUrl { get; set; }
 
         // Sustainability fields

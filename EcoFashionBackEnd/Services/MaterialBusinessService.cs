@@ -67,6 +67,11 @@ namespace EcoFashionBackEnd.Services
             // Tự động tính toán thông tin vận chuyển nếu chưa có (handles both auto and override)
             TransportCalculationService.CalculateTransportInfo(request);
 
+            // Normalize optional URL: treat empty/whitespace as null
+            var normalizedDocUrl = string.IsNullOrWhiteSpace(request.DocumentationUrl)
+                ? null
+                : request.DocumentationUrl.Trim();
+
             var material = new Material
             {
                 SupplierId = request.SupplierId,
@@ -76,7 +81,7 @@ namespace EcoFashionBackEnd.Services
                 RecycledPercentage = request.RecycledPercentage,
                 QuantityAvailable = request.QuantityAvailable,
                 PricePerUnit = request.PricePerUnit,
-                DocumentationUrl = "https://plus.unsplash.com/premium_photo-1737073520175-b3303a6e1e76?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                DocumentationUrl = normalizedDocUrl,
                // 1.2.3. sustainability 
                 CarbonFootprint = request.CarbonFootprint,
                 CarbonFootprintUnit = "kg CO2e/mét",

@@ -39,9 +39,9 @@ namespace EcoFashionBackEnd.Controllers
             }
         }
 
-        // Benchmarks for a specific material type admin only 
+        // Benchmarks for a specific material type (admin and supplier)
         [HttpGet("{id}/benchmarks")]
-        [Authorize(Roles = "admin")] 
+        [Authorize(Roles = "admin,supplier")] 
         public async Task<IActionResult> GetBenchmarksByType(int id)
         {
             var result = await _materialTypeService.GetBenchmarksByTypeAsync(id);
