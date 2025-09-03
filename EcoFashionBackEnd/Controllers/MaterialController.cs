@@ -230,6 +230,7 @@ namespace EcoFashionBackEnd.Controllers
         {
             try
             {
+                Console.WriteLine($"Received request with country parameter: {country}");
                 if (string.IsNullOrEmpty(country))
                 {
                     return BadRequest(ApiResult<object>.Fail("Country parameter is required"));

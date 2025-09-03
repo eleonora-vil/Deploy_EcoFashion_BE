@@ -293,15 +293,27 @@ namespace EcoFashionBackEnd.Services
         /// </summary>
         public static List<TransportOverrideOption> GetAvailableTransportMethods(string? productionCountry)
         {
+            // Log đầu vào để kiểm tra giá trị của 'productionCountry'
+            Console.WriteLine($"[DEBUG] Function GetAvailableTransportMethods called with productionCountry: '{productionCountry}'");
+
             if (string.IsNullOrEmpty(productionCountry))
+            {
+                // Log khi đầu vào rỗng hoặc null
+                Console.WriteLine("[DEBUG] Production country is null or empty. Returning empty list.");
                 return new List<TransportOverrideOption>();
+            }
 
             var country = productionCountry.Trim();
-            
-            // Try exact match first
+            Console.WriteLine($"[DEBUG] Trimmed country value: '{country}'");
+
+            // Thử tìm kiếm chính xác
             if (SupportedCountries.TryGetValue(country, out var countryInfo))
             {
-                return countryInfo.AvailableTransportMethods.Select(tm => new TransportOverrideOption
+                // Log khi tìm thấy kết quả chính xác
+                Console.WriteLine($"[DEBUG] Found exact match for country: '{country}'. Returning available transport methods.");
+
+                // Log số lượng phương thức vận chuyển được trả về
+                var methods = countryInfo.AvailableTransportMethods.Select(tm => new TransportOverrideOption
                 {
                     Method = tm.Method,
                     EstimatedDistance = tm.Distance,
@@ -311,16 +323,24 @@ namespace EcoFashionBackEnd.Services
                     SustainabilityImpact = GetSustainabilityImpact(tm.Distance, tm.Method),
                     Color = GetMethodColor(tm.Method)
                 }).ToList();
+
+                Console.WriteLine($"[DEBUG] Returning {methods.Count} transport methods.");
+                return methods;
             }
 
-            // Try case-insensitive match
+            // Thử tìm kiếm không phân biệt chữ hoa, chữ thường
             var countryLower = country.ToLower();
-            var match = SupportedCountries.FirstOrDefault(kvp => 
+            Console.WriteLine($"[DEBUG] No exact match found. Trying case-insensitive match for: '{countryLower}'.");
+            var match = SupportedCountries.FirstOrDefault(kvp =>
                 kvp.Key.ToLower() == countryLower);
-            
+
             if (!string.IsNullOrEmpty(match.Key))
             {
-                return match.Value.AvailableTransportMethods.Select(tm => new TransportOverrideOption
+                // Log khi tìm thấy kết quả không phân biệt chữ hoa, chữ thường
+                Console.WriteLine($"[DEBUG] Found case-insensitive match for key: '{match.Key}'.");
+
+                // Log số lượng phương thức vận chuyển được trả về
+                var methods = match.Value.AvailableTransportMethods.Select(tm => new TransportOverrideOption
                 {
                     Method = tm.Method,
                     EstimatedDistance = tm.Distance,
@@ -330,8 +350,13 @@ namespace EcoFashionBackEnd.Services
                     SustainabilityImpact = GetSustainabilityImpact(tm.Distance, tm.Method),
                     Color = GetMethodColor(tm.Method)
                 }).ToList();
+
+                Console.WriteLine($"[DEBUG] Returning {methods.Count} transport methods.");
+                return methods;
             }
 
+            // Log khi không tìm thấy kết quả nào
+            Console.WriteLine("[DEBUG] No match found, either exact or case-insensitive. Returning empty list.");
             return new List<TransportOverrideOption>();
         }
 

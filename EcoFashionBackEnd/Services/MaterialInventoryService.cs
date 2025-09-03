@@ -53,7 +53,7 @@ namespace EcoFashionBackEnd.Services
             }).ToList();
         }
 
-        public async Task<List<MaterialStockTransactionDto>> GetTransactionsAsync(Guid? supplierId, int? materialId, int? warehouseId, string? type, DateTime? from, DateTime? to)
+        public async Task<List<MaterialStockTransactionDto>> GetTransactionsAsync(Guid? supplierId, int? materialId, int? warehouseId, string? type, DateTime? from, DateTime? to, bool? supplierOnly = null)
         {
             var query = _dbContext.MaterialStockTransactions
                 .Include(t => t.Material)!
@@ -74,6 +74,7 @@ namespace EcoFashionBackEnd.Services
             if (from.HasValue) query = query.Where(t => t.CreatedAt >= from.Value);
             if (to.HasValue) query = query.Where(t => t.CreatedAt <= to.Value);
             if (supplierId.HasValue) query = query.Where(t => t.Warehouse!.SupplierId == supplierId);
+            if (supplierOnly == true) query = query.Where(t => t.Warehouse!.SupplierId != null && t.Warehouse!.WarehouseType == "Material");
 
             var list = await query
                 .OrderByDescending(t => t.CreatedAt)

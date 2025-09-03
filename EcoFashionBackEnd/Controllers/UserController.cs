@@ -151,6 +151,24 @@ namespace EcoFashionBackEnd.Controllers
                 return StatusCode(500, ApiResult<object>.Fail(ex.Message));
             }
         }
+
+
+        // Admin: get all users
+        [Authorize(Roles = "admin")]
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            try
+            {
+                var users = await _userService.GetAllUsersAsync();
+                return Ok(ApiResult<object>.Succeed(users));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ApiResult<object>.Fail(ex.Message));
+            }
+        }
+
         [HttpGet("test-email")]
         public async Task<IActionResult> TestEmail()
         {
@@ -166,6 +184,5 @@ namespace EcoFashionBackEnd.Controllers
             var result = await _emailService.SendEmailAsync(mailData);
             return Ok(new { success = result });
         }
-
     }
 }

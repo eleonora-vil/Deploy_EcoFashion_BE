@@ -294,5 +294,27 @@ namespace EcoFashionBackEnd.Services
                 CreatedAt = user.CreatedAt
             };
         }
+
+        // Admin: Get all users with roles and basic info
+        public async Task<List<UserInfo>> GetAllUsersAsync()
+        {
+            var users = await _dbContext.Users
+                .Include(u => u.UserRole)
+                .OrderByDescending(u => u.CreatedAt)
+                .ToListAsync();
+
+            return users.Select(u => new UserInfo
+            {
+                UserId = u.UserId,
+                FullName = u.FullName ?? string.Empty,
+                Email = u.Email ?? string.Empty,
+                Phone = u.Phone,
+                Username = u.Username,
+                Role = u.UserRole != null ? u.UserRole.RoleName : string.Empty,
+                RoleId = u.RoleId,
+                Status = u.Status.ToString(),
+                CreatedAt = u.CreatedAt
+            }).ToList();
+        }
     }
 }
