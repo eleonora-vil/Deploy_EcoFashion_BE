@@ -166,7 +166,6 @@ namespace EcoFashionBackEnd.Services
             var emailResult = await _emailService.SendEmailAsync(mailData);
             if (!emailResult)
             {
-                // fallback
                 var fallbackMail = new MailData
                 {
                     EmailToId = "vinhntse173702@fpt.edu.vn",
