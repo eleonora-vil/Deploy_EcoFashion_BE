@@ -117,14 +117,13 @@ public class Program
     }
 
     // 9. Swagger
-    if (env.IsDevelopment())
-    {
+    
         app.UseSwagger();
         app.UseSwaggerUI(c =>
         {
             c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
         });
-    }
+   
 
     // 10. Middlewares
     app.UseCors("CORS");
