@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EcoFashionBackEnd.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250903055435_v1")]
-    partial class v1
+    [Migration("20250913143931_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -218,7 +218,8 @@ namespace EcoFashionBackEnd.Migrations
                     b.HasKey("CartId");
 
                     b.HasIndex("UserId", "IsActive")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("\"UserId\" IS NOT NULL AND \"IsActive\" = true");
 
                     b.ToTable("Carts");
                 });

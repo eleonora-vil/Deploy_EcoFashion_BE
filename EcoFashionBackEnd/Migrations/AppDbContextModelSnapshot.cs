@@ -215,7 +215,8 @@ namespace EcoFashionBackEnd.Migrations
                     b.HasKey("CartId");
 
                     b.HasIndex("UserId", "IsActive")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("\"UserId\" IS NOT NULL AND \"IsActive\" = true");
 
                     b.ToTable("Carts");
                 });

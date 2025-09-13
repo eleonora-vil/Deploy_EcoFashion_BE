@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EcoFashionBackEnd.Migrations
 {
     /// <inheritdoc />
-    public partial class v1 : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -1462,7 +1462,8 @@ namespace EcoFashionBackEnd.Migrations
                 name: "IX_Carts_UserId_IsActive",
                 table: "Carts",
                 columns: new[] { "UserId", "IsActive" },
-                unique: true);
+                unique: true,
+                filter: "\"UserId\" IS NOT NULL AND \"IsActive\" = true");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CheckoutSessionItems_CheckoutSessionId",
