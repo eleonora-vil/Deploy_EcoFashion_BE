@@ -114,7 +114,9 @@ public class Program
         }
 
         // 9. Swagger
-        if (env.IsDevelopment())
+        var enableSwagger = builder.Configuration.GetValue<bool>("EnableSwagger");
+
+        if (enableSwagger)
         {
             app.UseSwagger();
             app.UseSwaggerUI(c =>
@@ -122,7 +124,6 @@ public class Program
                 c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
             });
         }
-
 
         // 10. Middlewares
         app.UseCors("CORS");
