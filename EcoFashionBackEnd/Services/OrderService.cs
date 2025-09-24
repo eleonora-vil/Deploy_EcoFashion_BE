@@ -122,16 +122,42 @@ namespace EcoFashionBackEnd.Services
                 sellerType = "Designer";
             }
 
-            // Lấy SĐT từ địa chỉ mặc định của user nếu có
+            // Lấy SenderName và SĐT từ UserAddress phù hợp với ShippingAddress
             string? personalPhone = null;
+            string? senderName = null;
             try
             {
-                var defaultAddr = _dbContext.UserAddresses
+                // Tìm UserAddress phù hợp với ShippingAddress
+                var userAddresses = _dbContext.UserAddresses
                     .AsNoTracking()
-                    .FirstOrDefault(ua => ua.UserId == order.UserId && ua.IsDefault);
-                if (defaultAddr != null)
+                    .Where(ua => ua.UserId == order.UserId)
+                    .ToList();
+
+                UserAddress? matchingAddress = null;
+
+                // Tìm địa chỉ khớp với ShippingAddress
+                foreach (var addr in userAddresses)
                 {
-                    personalPhone = defaultAddr.PersonalPhoneNumber;
+                    var formattedAddr = $"{addr.AddressLine}, {addr.District}, {addr.City}";
+                    if (order.ShippingAddress.Contains(addr.AddressLine ?? "") ||
+                        formattedAddr == order.ShippingAddress ||
+                        order.ShippingAddress.Contains(formattedAddr))
+                    {
+                        matchingAddress = addr;
+                        break;
+                    }
+                }
+
+                // Nếu không tìm thấy, dùng địa chỉ mặc định
+                if (matchingAddress == null)
+                {
+                    matchingAddress = userAddresses.FirstOrDefault(ua => ua.IsDefault);
+                }
+
+                if (matchingAddress != null)
+                {
+                    personalPhone = matchingAddress.PersonalPhoneNumber;
+                    senderName = matchingAddress.SenderName;
                 }
             }
             catch { }
@@ -140,7 +166,7 @@ namespace EcoFashionBackEnd.Services
             {
                 OrderId = order.OrderId,
                 UserId = order.UserId,
-                UserName = order.User?.FullName ?? "Unknown User",
+                UserName = senderName ?? order.User?.FullName ?? "Unknown User",
                 ShippingAddress = order.ShippingAddress,
                 PersonalPhoneNumber = personalPhone,
                 TotalPrice = order.TotalPrice,

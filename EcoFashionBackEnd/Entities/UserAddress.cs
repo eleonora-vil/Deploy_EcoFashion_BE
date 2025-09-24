@@ -31,6 +31,9 @@ namespace EcoFashionBackEnd.Entities
         [StringLength(100)]
         public string? Country { get; set; }
 
+        [StringLength(100)]
+        public string? SenderName { get; set; }
+
         public bool IsDefault { get; set; } = false;
 
     }

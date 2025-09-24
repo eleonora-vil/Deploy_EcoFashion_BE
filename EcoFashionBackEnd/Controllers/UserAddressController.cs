@@ -93,6 +93,7 @@ namespace EcoFashionBackEnd.Controllers
                 District = request.District,
                 PersonalPhoneNumber = request.PersonalPhoneNumber,
                 Country = request.Country ?? "Vietnam",
+                SenderName = request.SenderName,
                 IsDefault = request.IsDefault
             };
 
@@ -124,6 +125,7 @@ namespace EcoFashionBackEnd.Controllers
                 District = request.District,
                 PersonalPhoneNumber = request.PersonalPhoneNumber,
                 Country = request.Country ?? "Vietnam",
+                SenderName = request.SenderName,
                 IsDefault = request.IsDefault
             };
 
@@ -220,6 +222,7 @@ namespace EcoFashionBackEnd.Controllers
         // Số điện thoại nhận hàng (thay cho ZipCode)
         public string? PersonalPhoneNumber { get; set; }
         public string? Country { get; set; }
+        public string? SenderName { get; set; }
         public bool IsDefault { get; set; } = false;
     }
 
@@ -231,6 +234,7 @@ namespace EcoFashionBackEnd.Controllers
         // Số điện thoại nhận hàng (thay cho ZipCode)
         public string? PersonalPhoneNumber { get; set; }
         public string? Country { get; set; }
+        public string? SenderName { get; set; }
         public bool IsDefault { get; set; } = false;
     }
 }

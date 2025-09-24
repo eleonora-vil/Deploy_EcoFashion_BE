@@ -118,6 +118,7 @@ namespace EcoFashionBackEnd.Services
                 existingAddress.District = updatedAddress.District;
                 existingAddress.PersonalPhoneNumber = updatedAddress.PersonalPhoneNumber;
                 existingAddress.Country = updatedAddress.Country;
+                existingAddress.SenderName = updatedAddress.SenderName;
 
                 // Handle default status change
                 if (updatedAddress.IsDefault && !existingAddress.IsDefault)

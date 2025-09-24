@@ -94,27 +94,18 @@ namespace EcoFashionBackEnd.Data.test
                 await DesignerMaterialInventorySeeder.SeedAsync(_context);
                 #endregion
 
-
-
-
-
-
-
                 Console.WriteLine("Seeding Warehouses...");
                 await WarehouseSeeder.SeedAsync(_context);
 
                 Console.WriteLine("Seeding Supplier Material Warehouse/Stocks...");
                 await MaterialInventorySeeder.SeedAsync(_context);
 
-                Console.WriteLine("Seeding Material Stock Transactions...");
-                await MaterialStockTransactionSeeder.SeedAsync(_context);
-
                 #region -- Product --
                 await ProductSeeder.SeedAsync(_context);
-                
+
                 Console.WriteLine("Seeding Product Inventories...");
                 await ProductInventorySeeder.SeedAsync(_context);
-                
+
                 Console.WriteLine("Seeding Product Inventory Transactions...");
                 // await ProductInventoryTransactionSeeder.SeedAsync(_context);
                 #endregion

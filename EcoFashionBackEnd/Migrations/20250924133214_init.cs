@@ -448,6 +448,7 @@ namespace EcoFashionBackEnd.Migrations
                     District = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     PersonalPhoneNumber = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
                     Country = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    SenderName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     IsDefault = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>

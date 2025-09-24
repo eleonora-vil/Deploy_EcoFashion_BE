@@ -103,7 +103,7 @@ namespace EcoFashionBackEnd.Services
         /// </summary>
         private decimal CalculateTransportScore(Material material)
         {
-            if (material.TransportDistance == null || material.TransportMethod == null || 
+            if (material.TransportDistance == null || material.TransportMethod == null ||
                 string.IsNullOrEmpty(material.ProductionCountry))
                 return 0;
 
@@ -111,9 +111,9 @@ namespace EcoFashionBackEnd.Services
             {
                 // Use the new TransportCalculationService to get evaluation
                 var evaluation = TransportCalculationService.GetTransportEvaluation(
-                    material.TransportDistance.Value, 
+                    material.TransportDistance.Value,
                     material.TransportMethod);
-                
+
                 // Extract sustainability impact and convert to score
                 var evaluationObj = evaluation as dynamic;
                 if (evaluationObj != null)
@@ -121,7 +121,7 @@ namespace EcoFashionBackEnd.Services
                     // The new service provides more sophisticated scoring
                     var distance = material.TransportDistance.Value;
                     var method = material.TransportMethod.ToLower();
-                    
+
                     // Enhanced scoring logic that considers country-specific data
                     decimal distanceScore = distance switch
                     {
@@ -150,9 +150,9 @@ namespace EcoFashionBackEnd.Services
                         try
                         {
                             var availableMethods = TransportCalculationService.GetAvailableTransportMethods(material.ProductionCountry);
-                            var currentMethod = availableMethods.FirstOrDefault(m => 
+                            var currentMethod = availableMethods.FirstOrDefault(m =>
                                 m.Method.Equals(material.TransportMethod, StringComparison.OrdinalIgnoreCase));
-                            
+
                             if (currentMethod != null && currentMethod.IsRecommended)
                             {
                                 methodScore += 5; // Bonus for using recommended method
@@ -168,8 +168,8 @@ namespace EcoFashionBackEnd.Services
                         }
                     }
 
-                    // Weighted combination: distance (70%) + method (30%)
-                    decimal finalScore = (distanceScore * 0.7m) + (methodScore * 0.3m);
+                    // Weighted combination: distance (75%) + method (25%)
+                    decimal finalScore = (distanceScore * 0.75m) + (methodScore * 0.25m);
                     return Math.Max(0, Math.Min(100, finalScore));
                 }
             }
@@ -208,7 +208,7 @@ namespace EcoFashionBackEnd.Services
                 _ => 60
             };
 
-            return (distanceScore * 0.7m) + (methodScore * 0.3m);
+            return (distanceScore * 0.75m) + (methodScore * 0.25m);
         }
 
         /// <summary>
@@ -228,26 +228,26 @@ namespace EcoFashionBackEnd.Services
             foreach (var cert in certifications)
             {
                 // Check if the certification contains any recognized keywords
-                bool isRecognizedCert = 
+                bool isRecognizedCert =
                     // Tier 1: Comprehensive sustainability standards
-                    cert.Contains("GOTS") || 
-                    cert.Contains("CRADLE TO CRADLE") || 
-                    cert.Contains("USDA ORGANIC") || 
+                    cert.Contains("GOTS") ||
+                    cert.Contains("CRADLE TO CRADLE") ||
+                    cert.Contains("USDA ORGANIC") ||
                     cert.Contains("BLUESIGN") ||
-                    
+
                     // Tier 2: High-value specialized standards
-                    cert.Contains("OCS") || 
-                    cert.Contains("EU ECOLABEL") || 
-                    cert.Contains("FAIRTRADE") || 
-                    cert.Contains("BCI") || 
+                    cert.Contains("OCS") ||
+                    cert.Contains("EU ECOLABEL") ||
+                    cert.Contains("FAIRTRADE") ||
+                    cert.Contains("BCI") ||
                     cert.Contains("BETTER COTTON") ||
                     cert.Contains("OEKO-TEX") ||  // Matches "OEKO-TEX Standard 100", etc.
-                    cert.Contains("RWS") || 
+                    cert.Contains("RWS") ||
                     cert.Contains("ECO PASSPORT") ||
-                    
+
                     // Tier 3: Material-specific recycling standards
-                    cert.Contains("GRS") || 
-                    cert.Contains("RCS") || 
+                    cert.Contains("GRS") ||
+                    cert.Contains("RCS") ||
                     cert.Contains("RECYCLED CLAIM");
 
                 if (isRecognizedCert)
@@ -262,8 +262,8 @@ namespace EcoFashionBackEnd.Services
         /// <summary>
         /// Tính điểm cho từng tiêu chí
         /// </summary>
-        private (decimal score, string status, string explanation, decimal actualValue, decimal benchmarkValue) 
-            CalculateCriterionScore(Material material, List<MaterialSustainability> actualValues, 
+        private (decimal score, string status, string explanation, decimal actualValue, decimal benchmarkValue)
+            CalculateCriterionScore(Material material, List<MaterialSustainability> actualValues,
                 List<MaterialTypeBenchmark> benchmarks, SustainabilityCriteria criterion)
         {
             decimal actualValue = 0;
@@ -333,14 +333,14 @@ namespace EcoFashionBackEnd.Services
                 case "Organic Certification":
                     // Check if we have a MaterialSustainability record for this criterion
                     var organicMs = actualValues.FirstOrDefault(ms => ms.CriterionId == criterion.CriterionId);
-                    
+
                     if (organicMs != null)
                     {
                         // Use the stored value from MaterialSustainability
                         score = organicMs.Value == 100 ? 100 : 0;
                         status = organicMs.Value == 100 ? "Certified" : "Not Certified";
-                        explanation = organicMs.Value == 100 ? 
-                            "Có chứng nhận bền vững được công nhận" : 
+                        explanation = organicMs.Value == 100 ?
+                            "Có chứng nhận bền vững được công nhận" :
                             "Không có chứng nhận bền vững được công nhận";
                     }
                     else
@@ -349,7 +349,7 @@ namespace EcoFashionBackEnd.Services
                         var hasCertification = HasOrganicCertification(material);
                         score = hasCertification ? 100 : 0;
                         status = hasCertification ? "Certified" : "Not Certified";
-                        explanation = hasCertification ? 
+                        explanation = hasCertification ?
                             "Có chứng nhận bền vững được công nhận (từ certificationDetails)" :
                             "Không có chứng nhận bền vững được công nhận";
                     }
@@ -384,29 +384,29 @@ namespace EcoFashionBackEnd.Services
                 return false;
 
             var details = material.CertificationDetails.ToUpperInvariant();
-            
+
             // Expanded recognition of sustainability certifications
             // Tier 1: Comprehensive sustainability standards
-            if (details.Contains("GOTS") || 
-                details.Contains("CRADLE TO CRADLE") || 
-                details.Contains("USDA ORGANIC") || 
+            if (details.Contains("GOTS") ||
+                details.Contains("CRADLE TO CRADLE") ||
+                details.Contains("USDA ORGANIC") ||
                 details.Contains("BLUESIGN"))
                 return true;
 
             // Tier 2: High-value specialized standards
-            if (details.Contains("OCS") || 
-                details.Contains("EU ECOLABEL") || 
-                details.Contains("FAIRTRADE") || 
-                details.Contains("BCI") || 
+            if (details.Contains("OCS") ||
+                details.Contains("EU ECOLABEL") ||
+                details.Contains("FAIRTRADE") ||
+                details.Contains("BCI") ||
                 details.Contains("BETTER COTTON") ||
                 details.Contains("OEKO-TEX") ||  // Matches "OEKO-TEX Standard 100", "OEKO-TEX Standard 1000", etc.
-                details.Contains("RWS") || 
+                details.Contains("RWS") ||
                 details.Contains("ECO PASSPORT"))
                 return true;
 
             // Tier 3: Material-specific recycling standards
-            if (details.Contains("GRS") || 
-                details.Contains("RCS") || 
+            if (details.Contains("GRS") ||
+                details.Contains("RCS") ||
                 details.Contains("RECYCLED CLAIM"))
                 return true;
 
@@ -419,7 +419,7 @@ namespace EcoFashionBackEnd.Services
         public async Task<Dictionary<int, MaterialSustainabilityReport>> CalculateMaterialsSustainabilityScores(List<int> materialIds)
         {
             var result = new Dictionary<int, MaterialSustainabilityReport>();
-            
+
             if (materialIds == null || materialIds.Count == 0)
                 return result;
 

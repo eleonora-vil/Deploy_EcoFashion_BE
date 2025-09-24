@@ -1835,6 +1835,10 @@ namespace EcoFashionBackEnd.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<string>("SenderName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
