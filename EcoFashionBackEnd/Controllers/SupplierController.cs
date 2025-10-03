@@ -15,10 +15,12 @@ using EcoFashionBackEnd.Dtos;
 public class SupplierController : ControllerBase
 {
     private readonly SupplierService _supplierService;
+    private readonly SupplierAnalyticsService _supplierAnalyticsService;
 
-    public SupplierController(SupplierService supplierService)
+    public SupplierController(SupplierService supplierService, SupplierAnalyticsService supplierAnalyticsService)
     {
         _supplierService = supplierService;
+        _supplierAnalyticsService = supplierAnalyticsService;
     }
 
     // Landing Pages APIs - Public endpoints cho frontend showcase
@@ -236,5 +238,29 @@ public class SupplierController : ControllerBase
         }
 
         return Ok(ApiResult<object>.Succeed("Cập nhật profile thành công."));
+    }
+
+    /// <summary>
+    /// Supplier: Get revenue analytics (doanh thu theo ngày/tuần/tháng)
+    /// </summary>
+    [HttpGet("revenue-analytics")]
+    [Authorize]
+    public async Task<IActionResult> GetRevenueAnalytics([FromQuery] SupplierRevenueRequestDto request)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+        {
+            return BadRequest(ApiResult<object>.Fail("Không thể xác định người dùng."));
+        }
+
+        try
+        {
+            var analytics = await _supplierAnalyticsService.GetSupplierRevenueAnalyticsAsync(userId, request);
+            return Ok(ApiResult<SupplierRevenueAnalyticsDto>.Succeed(analytics));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ApiResult<object>.Fail($"Lỗi khi lấy dữ liệu analytics: {ex.Message}"));
+        }
     }
 }

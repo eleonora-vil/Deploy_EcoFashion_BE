@@ -26,7 +26,7 @@ public class ReviewService
             {
                 ReviewId = r.ReviewId,
                 UserId = r.UserId,
-                UserName = r.User.Username, // from User table
+                UserName = r.User.Email ?? r.User.Username, // from User table - prefer Email over Username
                 MaterialId = r.MaterialId,
                 ProductId = r.ProductId,
                 Comment = r.Comment,
@@ -43,7 +43,7 @@ public class ReviewService
             {
                 ReviewId = r.ReviewId,
                 UserId = r.UserId,
-                UserName = r.User.Username,
+                UserName = r.User.Email ?? r.User.Username, // prefer Email over Username
                 MaterialId = r.MaterialId,
                 ProductId = r.ProductId,
                 Comment = r.Comment,
@@ -164,7 +164,7 @@ public class ReviewService
             {
                 ReviewId = r.ReviewId,
                 UserId = r.UserId,
-                UserName = r.User.Username,
+                UserName = r.User.Email ?? r.User.Username, // prefer Email over Username
                 ProductId = r.ProductId,
                 MaterialId = r.MaterialId,
                 Comment = r.Comment,
