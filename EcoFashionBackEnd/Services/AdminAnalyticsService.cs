@@ -10,15 +10,18 @@ namespace EcoFashionBackEnd.Services
     {
         private readonly IRepository<WalletTransaction, int> _transactionRepository;
         private readonly IRepository<Wallet, int> _walletRepository;
+        private readonly IRepository<Order, int> _orderRepository;
         private readonly IConfiguration _configuration;
 
         public AdminAnalyticsService(
             IRepository<WalletTransaction, int> transactionRepository,
             IRepository<Wallet, int> walletRepository,
+            IRepository<Order, int> orderRepository,
             IConfiguration configuration)
         {
             _transactionRepository = transactionRepository;
             _walletRepository = walletRepository;
+            _orderRepository = orderRepository;
             _configuration = configuration;
         }
 
@@ -50,41 +53,69 @@ namespace EcoFashionBackEnd.Services
                 };
             }
 
-            // Get PaymentReceived transactions (customer pays admin - 100 in example)
-            // Include both single orders (OrderId) and group orders (OrderGroupId)
+            // Get all PaymentReceived transactions in date range
             var paymentReceivedTransactions = await _transactionRepository
                 .FindByCondition(t => t.WalletId == adminWallet.WalletId
                                    && t.Type == TransactionType.PaymentReceived
+                                   && t.Status == TransactionStatus.Success
                                    && (t.OrderId.HasValue || t.OrderGroupId.HasValue)
                                    && t.CreatedAt >= startDate
                                    && t.CreatedAt <= endDateTime)
                 .ToListAsync();
 
-            // Get Withdrawal transactions (admin pays seller - 90 in example)
-            var withdrawalTransactions = await _transactionRepository
+            // Get all Transfer transactions (admin pays sellers) in date range
+            var transferTransactions = await _transactionRepository
                 .FindByCondition(t => t.WalletId == adminWallet.WalletId
-                                   && t.Type == TransactionType.Withdrawal
-                                   && (t.OrderId.HasValue || t.OrderGroupId.HasValue)
+                                   && t.Type == TransactionType.Transfer
+                                   && t.Amount < 0 // Negative means money going out
+                                   && t.Status == TransactionStatus.Success
+                                   && t.OrderId.HasValue
                                    && t.CreatedAt >= startDate
                                    && t.CreatedAt <= endDateTime)
                 .ToListAsync();
 
-            // Calculate revenue from transactions
-            // Revenue = PaymentReceived - Withdrawal (commission that admin keeps)
             var revenueData = new List<dynamic>();
 
-            // Process single order transactions
-            var singleOrderPayments = paymentReceivedTransactions.Where(t => t.OrderId.HasValue).ToList();
-            var singleOrderWithdrawals = withdrawalTransactions.Where(t => t.OrderId.HasValue).ToList();
+            // Process order groups
+            var groupPayments = paymentReceivedTransactions.Where(t => t.OrderGroupId.HasValue).ToList();
+            foreach (var payment in groupPayments)
+            {
+                var groupId = payment.OrderGroupId!.Value;
 
+                // Get all OrderIds in this group
+                var orderIdsInGroup = await _orderRepository
+                    .FindByCondition(o => o.OrderGroupId == groupId)
+                    .Select(o => o.OrderId)
+                    .ToListAsync();
+
+                // Sum transfers (negative amounts) for all orders in this group
+                var totalTransfer = transferTransactions
+                    .Where(w => orderIdsInGroup.Contains(w.OrderId!.Value))
+                    .Sum(w => Math.Abs(w.Amount)); // Use Abs to get positive value
+
+                var revenue = (decimal)(Math.Abs(payment.Amount) - totalTransfer);
+
+                if (revenue > 0)
+                {
+                    revenueData.Add(new
+                    {
+                        Date = payment.CreatedAt.Date,
+                        OrderId = (int?)null,
+                        Revenue = revenue
+                    });
+                }
+            }
+
+            // Process single orders (not in group)
+            var singleOrderPayments = paymentReceivedTransactions.Where(t => t.OrderId.HasValue && !t.OrderGroupId.HasValue).ToList();
             foreach (var payment in singleOrderPayments)
             {
                 var orderId = payment.OrderId!.Value;
-                var withdrawal = singleOrderWithdrawals
+                var transfer = transferTransactions
                     .Where(w => w.OrderId == orderId)
-                    .Sum(w => Math.Abs(w.Amount));
+                    .Sum(w => Math.Abs(w.Amount)); // Use Abs to get positive value
 
-                var revenue = (decimal)(Math.Abs(payment.Amount) - withdrawal);
+                var revenue = (decimal)(Math.Abs(payment.Amount) - transfer);
 
                 if (revenue > 0)
                 {
@@ -97,35 +128,17 @@ namespace EcoFashionBackEnd.Services
                 }
             }
 
-            // Process order group transactions
-            var groupPayments = paymentReceivedTransactions.Where(t => t.OrderGroupId.HasValue).ToList();
-            var groupWithdrawals = withdrawalTransactions.Where(t => t.OrderGroupId.HasValue).ToList();
-
-            foreach (var payment in groupPayments)
+            if (!revenueData.Any())
             {
-                var groupId = payment.OrderGroupId!.Value;
-                var withdrawal = groupWithdrawals
-                    .Where(w => w.OrderGroupId == groupId)
-                    .Sum(w => Math.Abs(w.Amount));
-
-                var revenue = (decimal)(Math.Abs(payment.Amount) - withdrawal);
-
-                if (revenue > 0)
+                return new AdminRevenueAnalyticsDto
                 {
-                    // Count orders in this group
-                    var ordersInGroup = await _transactionRepository.GetAll()
-                        .Where(o => o.OrderGroupId == groupId)
-                        .Select(o => o.OrderId)
-                        .Distinct()
-                        .CountAsync();
-
-                    revenueData.Add(new
-                    {
-                        Date = payment.CreatedAt.Date,
-                        OrderId = (int?)null,
-                        Revenue = revenue
-                    });
-                }
+                    RevenuePoints = new List<AdminRevenuePointDto>(),
+                    TotalRevenue = 0,
+                    TotalOrders = 0,
+                    Period = request.Period ?? "daily",
+                    StartDate = startDate,
+                    EndDate = endDate
+                };
             }
 
             var revenuePoints = new List<AdminRevenuePointDto>();

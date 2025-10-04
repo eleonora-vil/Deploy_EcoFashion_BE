@@ -13,6 +13,7 @@ namespace EcoFashionBackEnd.Services
         private readonly IRepository<Material, Guid> _materialRepository;
         private readonly IRepository<WalletTransaction, int> _transactionRepository;
         private readonly IRepository<Wallet, int> _walletRepository;
+        private readonly IRepository<Order, int> _orderRepository;
         private readonly IConfiguration _configuration;
 
         public DashboardStatsService(
@@ -21,6 +22,7 @@ namespace EcoFashionBackEnd.Services
             IRepository<Material, Guid> materialRepository,
             IRepository<WalletTransaction, int> transactionRepository,
             IRepository<Wallet, int> walletRepository,
+            IRepository<Order, int> orderRepository,
             IConfiguration configuration)
         {
             _userRepository = userRepository;
@@ -28,6 +30,7 @@ namespace EcoFashionBackEnd.Services
             _materialRepository = materialRepository;
             _transactionRepository = transactionRepository;
             _walletRepository = walletRepository;
+            _orderRepository = orderRepository;
             _configuration = configuration;
         }
 
@@ -42,7 +45,7 @@ namespace EcoFashionBackEnd.Services
             // Count total materials
             var totalMaterials = await _materialRepository.GetAll().CountAsync();
 
-            // Calculate total revenue (using same logic as AdminAnalyticsService)
+            // Calculate total revenue
             var adminUserId = _configuration.GetValue<int>("AdminUserId", 1);
             var adminWallet = await _walletRepository
                 .FindByCondition(w => w.UserId == adminUserId)
@@ -56,46 +59,53 @@ namespace EcoFashionBackEnd.Services
                 var paymentReceivedTransactions = await _transactionRepository
                     .FindByCondition(t => t.WalletId == adminWallet.WalletId
                                        && t.Type == TransactionType.PaymentReceived
+                                       && t.Status == TransactionStatus.Success
                                        && (t.OrderId.HasValue || t.OrderGroupId.HasValue))
                     .ToListAsync();
 
-                // Get all Withdrawal transactions
-                var withdrawalTransactions = await _transactionRepository
+                // Get all Transfer transactions (admin pays sellers)
+                var transferTransactions = await _transactionRepository
                     .FindByCondition(t => t.WalletId == adminWallet.WalletId
-                                       && t.Type == TransactionType.Withdrawal
-                                       && (t.OrderId.HasValue || t.OrderGroupId.HasValue))
+                                       && t.Type == TransactionType.Transfer
+                                       && t.Amount < 0 // Negative means money going out
+                                       && t.Status == TransactionStatus.Success
+                                       && t.OrderId.HasValue)
                     .ToListAsync();
 
-                // Calculate revenue from single orders
-                var singleOrderPayments = paymentReceivedTransactions.Where(t => t.OrderId.HasValue).ToList();
-                var singleOrderWithdrawals = withdrawalTransactions.Where(t => t.OrderId.HasValue).ToList();
-
-                foreach (var payment in singleOrderPayments)
+                // Process order groups
+                var groupPayments = paymentReceivedTransactions.Where(t => t.OrderGroupId.HasValue).ToList();
+                foreach (var payment in groupPayments)
                 {
-                    var orderId = payment.OrderId!.Value;
-                    var withdrawal = singleOrderWithdrawals
-                        .Where(w => w.OrderId == orderId)
-                        .Sum(w => Math.Abs(w.Amount));
+                    var groupId = payment.OrderGroupId!.Value;
 
-                    var revenue = (decimal)(Math.Abs(payment.Amount) - withdrawal);
+                    // Get all OrderIds in this group
+                    var orderIdsInGroup = await _orderRepository
+                        .FindByCondition(o => o.OrderGroupId == groupId)
+                        .Select(o => o.OrderId)
+                        .ToListAsync();
+
+                    // Sum transfers (negative amounts) for all orders in this group
+                    var totalTransfer = transferTransactions
+                        .Where(w => orderIdsInGroup.Contains(w.OrderId!.Value))
+                        .Sum(w => Math.Abs(w.Amount)); // Use Abs to get positive value
+
+                    var revenue = (decimal)(Math.Abs(payment.Amount) - totalTransfer);
                     if (revenue > 0)
                     {
                         totalRevenue += revenue;
                     }
                 }
 
-                // Calculate revenue from order groups
-                var groupPayments = paymentReceivedTransactions.Where(t => t.OrderGroupId.HasValue).ToList();
-                var groupWithdrawals = withdrawalTransactions.Where(t => t.OrderGroupId.HasValue).ToList();
-
-                foreach (var payment in groupPayments)
+                // Process single orders (not in group)
+                var singleOrderPayments = paymentReceivedTransactions.Where(t => t.OrderId.HasValue && !t.OrderGroupId.HasValue).ToList();
+                foreach (var payment in singleOrderPayments)
                 {
-                    var groupId = payment.OrderGroupId!.Value;
-                    var withdrawal = groupWithdrawals
-                        .Where(w => w.OrderGroupId == groupId)
-                        .Sum(w => Math.Abs(w.Amount));
+                    var orderId = payment.OrderId!.Value;
+                    var transfer = transferTransactions
+                        .Where(w => w.OrderId == orderId)
+                        .Sum(w => Math.Abs(w.Amount)); // Use Abs to get positive value
 
-                    var revenue = (decimal)(Math.Abs(payment.Amount) - withdrawal);
+                    var revenue = (decimal)(Math.Abs(payment.Amount) - transfer);
                     if (revenue > 0)
                     {
                         totalRevenue += revenue;
